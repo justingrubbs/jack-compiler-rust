@@ -61,8 +61,8 @@ pub enum Symbol {
 }
 
 // Lexer:
-fn lexer() -> impl Parser<char, Vec<Token>, Error = Simple<char>> {
-    todo!()
-}
+// fn lexer() -> impl Parser<char, Vec<Token>, Error = Simple<char>> {
+//     todo!()
+// }
 
 
