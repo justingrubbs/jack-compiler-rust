@@ -34,19 +34,27 @@ fn main() -> Result<(), Error> {
 
         // Write the token string to the file
         fs::write(output_path, token_string)?;
-    } else if metadata.is_dir() {
-        // If it's a directory, parse all .jack files
-        for entry in fs::read_dir(path)? {
-            let entry = entry?;
-            let file_path = entry.path();
-            if file_path.extension().and_then(|s| s.to_str()) == Some("jack") {
-                parse_jack_file(file_path.to_str().unwrap())?;
-            }
-        }
-    } else {
+    } 
+    // else if metadata.is_dir() {
+    //     // If it's a directory, parse all .jack files
+    //     for entry in fs::read_dir(path)? {
+    //         let entry = entry?;
+    //         let file_path = entry.path();
+    //         if file_path.extension().and_then(|s| s.to_str()) == Some("jack") {
+    //             let tokens = parse_jack_file(file_path.to_str().unwrap())?;
+    //             let token_string = tokens
+    //                 .iter()
+    //                 .map(|token| format!("{:?}", token)) // Adjust formatting as needed
+    //                 .collect::<Vec<String>>()
+    //                 .join("\n");
+    //             let output_path = format!("{}T.xml", path.trim_end_matches(".jack"));
+    //             fs::write(output_path, token_string)?;
+    //         }
+    //     }
+    // } 
+    else {
         eprintln!("Provided path is neither a file nor a directory.");
     }
-
     Ok(())
 }
 
@@ -58,11 +66,10 @@ fn parse_jack_file(file_path: &str) -> Result<Vec<String>, Error> {
     let tokens = crate::lexer::tokenize().parse(contents)
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:?}", e)));
     match tokens {
-        Ok(_tokens) => Ok(_tokens.into_iter()
+        Ok(token_vec) => Ok(token_vec.into_iter()
             .map(crate::lexer::print_token)
             .collect()),
         Err(e) => todo!(),
     }
-        
 }
 

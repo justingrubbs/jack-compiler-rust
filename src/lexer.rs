@@ -232,5 +232,5 @@ impl fmt::Display for Token {
 }
 
 pub fn print_token(token: Token) -> String {
-    format!("\t{}",token.to_string())
+    format!("{}", token)
 }
