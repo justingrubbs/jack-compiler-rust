@@ -74,10 +74,15 @@ fn parse_comment() -> impl Parser<char, (), Error = Simple<char>> {
     let multi_line_comment = just("/*")
         .then_ignore(take_until(just("*/")))
         .padded();
+
+    let api_comment = just("/**")
+        .then_ignore(take_until(just("*/")))
+        .padded();
     
     choice((
         single_line_comment,
         multi_line_comment,
+        api_comment,
     )).ignored()
 }
 
