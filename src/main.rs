@@ -21,13 +21,12 @@ fn main() -> Result<(), Error> {
 
     // Check if the path is a file or directory
     let metadata = fs::metadata(path)?;
-
+    
     if metadata.is_file() {
-        // If it's a file, parse it
         let tokens = parse_jack_file(path)?;
         let token_string = tokens
             .iter()
-            .map(|token| format!("{:?}", token)) // Adjust formatting as needed
+            .map(|token| format!("{}", token))
             .collect::<Vec<String>>()
             .join("\n");
         let output_path = format!("{}T.xml", path.trim_end_matches(".jack")); 
@@ -64,12 +63,12 @@ fn main() -> Result<(), Error> {
 fn parse_jack_file(file_path: &str) -> Result<Vec<String>, Error> {
     let contents = fs::read_to_string(file_path)?;
     let tokens = crate::lexer::tokenize().parse(contents)
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:?}", e)));
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)));
     match tokens {
         Ok(token_vec) => Ok(token_vec.into_iter()
             .map(crate::lexer::print_token)
             .collect()),
-        Err(e) => todo!(),
+        Err(e) => Err(e),
     }
 }
 
