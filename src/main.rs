@@ -31,12 +31,12 @@ fn main() -> Result<(), Error> {
     if metadata.is_file() {
         // If it's a file, parse it
         let tokens = parse_jack_file(path)?;
-        let token_string = tokens
-        .iter()
-        .map(|token| format!("{:?}", token)) // Adjust formatting as needed
-        .collect::<Vec<String>>()
-        .join("\n");
-        let output_path = format!("{}.xml", path.trim_end_matches(".jack")); 
+            let token_string = tokens
+            .iter()
+            .map(|token| format!("{:?}", token)) // Adjust formatting as needed
+            .collect::<Vec<String>>()
+            .join("\n");
+        let output_path = format!("{}T.xml", path.trim_end_matches(".jack")); 
 
         // Write the token string to the file
         fs::write(output_path, token_string)?;
@@ -56,10 +56,19 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
+
+
 // Function to parse a single Jack file
-fn parse_jack_file(file_path: &str) -> Result<Vec<crate::lexer::Token>, Error> {
+fn parse_jack_file(file_path: &str) -> Result<Vec<String>, Error> {
     let contents = fs::read_to_string(file_path)?;
-    crate::lexer::tokenize().parse(contents)
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:?}", e)))
+    let tokens = crate::lexer::tokenize().parse(contents)
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:?}", e)));
+    match tokens {
+        Ok(_tokens) => Ok(_tokens.into_iter()
+            .map(crate::lexer::print_token)
+            .collect()),
+        Err(e) => todo!(),
+    }
+        
 }
 

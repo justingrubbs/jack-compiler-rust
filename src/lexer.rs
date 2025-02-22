@@ -1,3 +1,4 @@
+use std::fmt;
 use chumsky::prelude::*;
 
 
@@ -147,3 +148,74 @@ fn parse_identifier() -> impl Parser<char, String, Error = Simple<char>> {
         .padded()
 }
 
+impl fmt::Display for Keyword {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let keyword_str = match self {
+            Keyword::Class => "class",
+            Keyword::Constructor => "constructor",
+            Keyword::Function => "function",
+            Keyword::Method => "method",
+            Keyword::Field => "field",
+            Keyword::Static => "static",
+            Keyword::Var => "var",
+            Keyword::Int => "int",
+            Keyword::Char => "char",
+            Keyword::Boolean => "boolean",
+            Keyword::Void => "void",
+            Keyword::True => "true",
+            Keyword::False => "false",
+            Keyword::Null => "null",
+            Keyword::This => "this",
+            Keyword::Let => "let",
+            Keyword::Do => "do",
+            Keyword::If => "if",
+            Keyword::Else => "else",
+            Keyword::While => "while",
+            Keyword::Return => "return",
+        };
+        write!(f, "<keyword> {keyword_str} </keyword>")
+    }
+}
+
+impl fmt::Display for Symbol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let symbol_str = match self {
+            Symbol::LCurly => "{",
+            Symbol::RCurly => "}",
+            Symbol::LBracket => "[",
+            Symbol::RBracket => "]",
+            Symbol::LParens => "(",
+            Symbol::RParens => ")",
+            Symbol::Period => ".",
+            Symbol::Comma => ",",
+            Symbol::Semicolon => ";",
+            Symbol::Plus => "+",
+            Symbol::Minus => "-",
+            Symbol::Asterisk => "*",
+            Symbol::Slash => "/",
+            Symbol::Ampersand => "&amp;",
+            Symbol::Bar => "|",
+            Symbol::Lesser => "&lt;",
+            Symbol::Greater => "&gt;",
+            Symbol::Equal => "=",
+            Symbol::Tilde => "~",
+        };
+        write!(f, "<symbol> {symbol_str} </symbol>")
+    }
+}
+
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Token::Keyword(k) => write!(f, "{}", k),
+            Token::Symbol(s) => write!(f, "{}", s),
+            Token::Integer(i) => write!(f, "<integer> {} </integer>", i),
+            Token::String(s) => write!(f, "<string> \"{}\" </string>", s),
+            Token::Identifier(s) => write!(f, "<identifier> {} </identifier>", s),
+        }
+    }
+}
+
+pub fn print_token(token: Token) -> String {
+    format!("\\t{}",token.to_string())
+}

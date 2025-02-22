@@ -1,6 +1,3 @@
-// oh no
-/* oh no twice  again
-        */
 if (x < 0) {
 
    let state = "negative";
