@@ -11,6 +11,8 @@ use std::env;
 use std::fs;
 use std::io::Error;
 
+use chumsky::Parser;
+
 fn main() -> Result<(), Error> {
     // Get the command-line arguments
     let args: Vec<String> = env::args().collect();
@@ -46,11 +48,10 @@ fn main() -> Result<(), Error> {
 }
 
 // Function to parse a single Jack file
-fn parse_jack_file(file_path: &str) -> Result<(), Error> {
-    let contents = fs::read_to_string(file_path)?;
-    println!("Parsing file: {}\nContents:\n{}", file_path, contents);
-    // Here you would call your parsing logic to create the AST
-    Ok(())
+fn parse_jack_file(file_path: &str) -> Result<Vec<crate::lexer::Token>, Error> {
+    // let contents = fs::read_to_string(file_path)?;
+    // let tokens = crate::lexer::tokenize().parse();
+    // Ok(crate::lexer::tokenize())
 }
 
 
