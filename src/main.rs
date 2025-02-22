@@ -9,7 +9,7 @@ mod parser;
 
 use std::env;
 use std::fs;
-use std::io::Error;
+use std::io::{self,Error};
 
 use chumsky::Parser;
 
@@ -30,7 +30,16 @@ fn main() -> Result<(), Error> {
 
     if metadata.is_file() {
         // If it's a file, parse it
-        parse_jack_file(path)?;
+        let tokens = parse_jack_file(path)?;
+        let token_string = tokens
+        .iter()
+        .map(|token| format!("{:?}", token)) // Adjust formatting as needed
+        .collect::<Vec<String>>()
+        .join("\n");
+        let output_path = format!("{}.xml", path.trim_end_matches(".jack")); 
+
+        // Write the token string to the file
+        fs::write(output_path, token_string)?;
     } else if metadata.is_dir() {
         // If it's a directory, parse all .jack files
         for entry in fs::read_dir(path)? {
@@ -49,10 +58,8 @@ fn main() -> Result<(), Error> {
 
 // Function to parse a single Jack file
 fn parse_jack_file(file_path: &str) -> Result<Vec<crate::lexer::Token>, Error> {
-    // let contents = fs::read_to_string(file_path)?;
-    // let tokens = crate::lexer::tokenize().parse();
-    // Ok(crate::lexer::tokenize())
+    let contents = fs::read_to_string(file_path)?;
+    crate::lexer::tokenize().parse(contents)
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:?}", e)))
 }
-
-
 
