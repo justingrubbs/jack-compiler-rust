@@ -17,12 +17,6 @@ fn main() -> Result<(), Error> {
     // Get the command-line arguments
     let args: Vec<String> = env::args().collect();
 
-    // // Check if the user provided a file path
-    // if args.len() < 2 {
-    //     eprintln!("Usage: {} <file_or_directory>", args[0]);
-    //     return Ok(());
-    // }
-
     let path = &args[1];
 
     // Check if the path is a file or directory
@@ -31,7 +25,7 @@ fn main() -> Result<(), Error> {
     if metadata.is_file() {
         // If it's a file, parse it
         let tokens = parse_jack_file(path)?;
-            let token_string = tokens
+        let token_string = tokens
             .iter()
             .map(|token| format!("{:?}", token)) // Adjust formatting as needed
             .collect::<Vec<String>>()

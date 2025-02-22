@@ -63,7 +63,22 @@ pub enum Symbol {
 
 // Lexer:
 pub fn tokenize() -> impl Parser<char, Vec<Token>, Error = Simple<char>> {
-    parse_token().repeated()
+    parse_comment().repeated().ignore_then(parse_token()).repeated()
+}
+
+fn parse_comment() -> impl Parser<char, (), Error = Simple<char>> {
+    let single_line_comment = just("//")
+        .then_ignore(filter(|&c| c != '\n').repeated())
+        .padded();
+    
+    let multi_line_comment = just("/*")
+        .then_ignore(take_until(just("*/")))
+        .padded();
+    
+    choice((
+        single_line_comment,
+        multi_line_comment,
+    )).ignored()
 }
 
 fn parse_token() -> impl Parser<char, Token, Error = Simple<char>> {
@@ -173,7 +188,7 @@ impl fmt::Display for Keyword {
             Keyword::While => "while",
             Keyword::Return => "return",
         };
-        write!(f, "<keyword> {keyword_str} </keyword>")
+        write!(f, "{keyword_str}")
     }
 }
 
@@ -200,22 +215,22 @@ impl fmt::Display for Symbol {
             Symbol::Equal => "=",
             Symbol::Tilde => "~",
         };
-        write!(f, "<symbol> {symbol_str} </symbol>")
+        write!(f, "{symbol_str}")
     }
 }
 
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Token::Keyword(k) => write!(f, "{}", k),
-            Token::Symbol(s) => write!(f, "{}", s),
-            Token::Integer(i) => write!(f, "<integer> {} </integer>", i),
-            Token::String(s) => write!(f, "<string> \"{}\" </string>", s),
+            Token::Keyword(k) => write!(f, "<keyword> {} </keyword>", k),
+            Token::Symbol(s) => write!(f, "<symbol> {} </symbol>", s),
+            Token::Integer(i) => write!(f, "<integerConstant> {} </integerConstant>", i),
+            Token::String(s) => write!(f, "<stringConstant> {} </stringConstant>", s),
             Token::Identifier(s) => write!(f, "<identifier> {} </identifier>", s),
         }
     }
 }
 
 pub fn print_token(token: Token) -> String {
-    format!("\\t{}",token.to_string())
+    format!("\t{}",token.to_string())
 }
