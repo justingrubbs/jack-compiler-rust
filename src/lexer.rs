@@ -4,7 +4,7 @@ use chumsky::prelude::*;
 
 // Figure 10.2 on page 194 of "The Elements of Computing Systems"
 
-#[derive(Clone,PartialEq,Eq,Hash)]
+#[derive(Debug,Clone,PartialEq,Eq,Hash)]
 pub enum Token {
     Keyword(Keyword),
     Symbol(Symbol),
@@ -13,7 +13,7 @@ pub enum Token {
     Identifier(String), // sequence of letters, digits, and underscore, not starting with digit
 }
 
-#[derive(Clone,PartialEq,Eq,Hash)]
+#[derive(Debug,Clone,PartialEq,Eq,Hash)]
 pub enum Keyword {
     Class,
     Constructor,
@@ -38,7 +38,7 @@ pub enum Keyword {
     Return,
 }
 
-#[derive(Clone,PartialEq,Eq,Hash)]
+#[derive(Debug,Clone,PartialEq,Eq,Hash)]
 pub enum Symbol {
     LCurly,
     RCurly,

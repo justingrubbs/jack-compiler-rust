@@ -65,10 +65,20 @@ fn parse_jack_file(file_path: &str) -> Result<Vec<String>, Error> {
     let tokens = crate::lexer::tokenize().parse(contents)
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)));
     match tokens {
-        Ok(token_vec) => Ok(token_vec.into_iter()
-            .map(crate::lexer::print_token)
-            .collect()),
+        Ok(token_vec) => match crate::parser::parse_class().parse(token_vec)
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e))) {
+            Ok(parsed) => Ok(crate::parser::print_class(parsed)),
+            Err(e) => Err(e),
+        },
         Err(e) => Err(e),
     }
+
+
+    // match tokens {
+    //     Ok(token_vec) => Ok(token_vec.into_iter()
+    //         .map(crate::lexer::print_token)
+    //         .collect()),
+    //     Err(e) => Err(e),
+    // }
 }
 
