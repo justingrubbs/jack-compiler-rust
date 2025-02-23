@@ -41,7 +41,7 @@ pub struct SubroutineDec {
     pub subroutine_return_type: SubroutineReturnType,
     pub subroutine_name: String,
     pub parameter_list: Vec<Parameter>,
-    pub subroutine_body: Vec<SubroutineBody>,
+    pub subroutine_body: SubroutineBody,
 }
 
 #[derive(Debug,Clone)]
@@ -64,9 +64,9 @@ pub struct Parameter {
 }
 
 #[derive(Debug,Clone)]
-pub enum SubroutineBody {
-    VarDec(VarDec),
-    Statement(Statement),
+pub struct SubroutineBody {
+    var_decs: Vec<VarDec>,
+    stmts: Vec<Statement>,
 }
 
 #[derive(Debug,Clone)]
