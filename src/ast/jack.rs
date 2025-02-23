@@ -65,8 +65,8 @@ pub struct Parameter {
 
 #[derive(Debug,Clone)]
 pub struct SubroutineBody {
-    var_decs: Vec<VarDec>,
-    stmts: Vec<Statement>,
+    pub var_decs: Vec<VarDec>,
+    pub stmts: Vec<Statement>,
 }
 
 #[derive(Debug,Clone)]
