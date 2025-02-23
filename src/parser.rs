@@ -4,7 +4,8 @@ use chumsky::prelude::*;
 
 
 
-fn kw(expected: crate::lexer::Keyword) -> impl Parser<Token, (), Error = Simple<Token>> {
+// Token helper functions:
+fn kw(expected: Keyword) -> impl Parser<Token, (), Error = Simple<Token>> {
     just(Token::Keyword(expected)).ignored()
 }
 
@@ -31,17 +32,41 @@ fn string_const() -> impl Parser<Token, String, Error = Simple<Token>> {
 }
 
 
+fn parse_class() -> impl Parser<Token, Class, Error = Simple<Token>> {
+    kw(Keyword::Class)
+        .ignore_then(ident())
+        .then_ignore(sym(Symbol::LCurly))
+        .then(parse_class_dec().repeated())
+        .then_ignore(sym(Symbol::RCurly))
+        .map(|(class_name,class_dec)| Class { class_name, class_dec })
+}
+
+// 
+fn parse_class_dec() -> impl Parser<Token, ClassDec, Error = Simple<Token>> {
+    parse_class_var_dec().repeated()
+        .then(parse_subroutine_dec().repeated())
+        .map(|(class_var_dec,subroutine_dec)| ClassDec { class_var_dec, subroutine_dec })
+}
+
+fn parse_class_var_dec() -> impl Parser<Token, ClassVarDec, Error = Simple<Token>> {
+    todo!()
+}
+
+fn parse_subroutine_dec() -> impl Parser<Token, SubroutineDec, Error = Simple<Token>> {
+    todo!()
+}
+
 
 
 
 
 fn parse_type() -> impl Parser<Token, Type, Error = Simple<Token>> {
     choice((
-        kw(crate::lexer::Keyword::Int).to(Type::Int),
-        kw(crate::lexer::Keyword::Boolean).to(Type::Boolean),
-        kw(crate::lexer::Keyword::Char).to(Type::Char),
+        kw(Keyword::Int).to(Type::Int),
+        kw(Keyword::Boolean).to(Type::Boolean),
+        kw(Keyword::Char).to(Type::Char),
         ident().map(|s| Type::ClassName(s))
-    ))
+    )).labelled("type")
 }
 
 

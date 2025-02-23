@@ -2,12 +2,10 @@
 // Program Structure (Figure 10.5):
 //      A Jack program is a a collection of classes, each appearing in a separate file.
 //      The compilation unit is a class. A class is a sequence of tokens, as follows:
-
-// 'class' [className] '{' [classVarDec*] [subRoutineDec*] '}'
 #[derive(Debug,Clone)]
 pub struct Class {
     pub class_name: String,
-    pub class_dec: ClassDec,
+    pub class_dec: Vec<ClassDec>,
 }
 
 #[derive(Debug,Clone)]
@@ -16,7 +14,6 @@ pub struct ClassDec {
     pub subroutine_dec: Vec<SubroutineDec>,
 }
 
-// ('static' | 'field') [type] [varName* sepBy ','] ';'
 #[derive(Debug,Clone)]
 pub struct ClassVarDec {
     pub class_var_type: ClassVarType,
@@ -38,7 +35,6 @@ pub enum Type {
     ClassName(String),
 }
 
-// ('constructor' | 'function' | 'method') ('void' | [type]) [subroutineName] '(' [parameterList] ')' [subroutineBody]
 #[derive(Debug,Clone)]
 pub struct SubroutineDec {
     pub subroutine_type: SubroutineType,
@@ -67,14 +63,12 @@ pub struct Parameter {
     pub var_name: String,
 }
 
-// '{' [varDec*] [statement*] '}'
 #[derive(Debug,Clone)]
 pub enum SubroutineBody {
     VarDec(VarDec),
     Statement(Statement),
 }
 
-// 'var' [type] [varName] (',' [varName])* ';'
 #[derive(Debug,Clone)]
 pub struct VarDec{
     pub r#type: Type,
@@ -83,7 +77,6 @@ pub struct VarDec{
 
 
 // Statements:
-
 #[derive(Debug,Clone)]
 pub enum Statement {
     LetStatement(LetStatement),
@@ -125,7 +118,6 @@ pub struct ReturnStatement {
 
 
 // Expressions:
-
 #[derive(Debug,Clone)]
 pub enum Expression {
     Expr(Term),
@@ -136,7 +128,7 @@ pub enum Expression {
 pub enum Term {
     IntegerConstant(i16),
     StringConstant(String),
-    KeywordConstant(Keyword),
+    KeywordConstant(KeywordConstant),
     VarName(String, Option<Box<Expression>>),
     Expression(Box<Expression>),
     UnaryTerm(UnaryOp, Box<Term>),
@@ -169,7 +161,7 @@ pub enum UnaryOp {
 }
 
 #[derive(Debug,Clone)]
-pub enum Keyword {
+pub enum KeywordConstant {
     True,
     False,
     Null,
