@@ -31,12 +31,25 @@ fn string_const() -> impl Parser<Token, String, Error = Simple<Token>> {
     }
 }
 
+// Parser specification notation (section 10.2.1):
+// 'xxx'        : Represents lanaguage tokens that appear verbatim
+// [xxx]        : Represents names of terminal and nonterminal elements
+// ()           : Used for grouping
+// [x] | [y]    : Either x or y
+// [x] [y]      : x is followed by y
+// [x]?         : x appears 0 or 1 times
+// [x]*         : x appears 0 or more times
+
+
 // Program structure:
+
+// parse_class: 
+//  'class' [class_name] '{' [class_dec] '}' 
 pub fn parse_class() -> impl Parser<Token, Class, Error = Simple<Token>> {
     kw(Keyword::Class)
         .ignore_then(ident())
         .then_ignore(sym(Symbol::LCurly))
-        .then(parse_class_dec().repeated())
+        .then(parse_class_dec())
         .then_ignore(sym(Symbol::RCurly))
         .map(|(class_name, class_dec)| Class {
             class_name,
@@ -45,6 +58,8 @@ pub fn parse_class() -> impl Parser<Token, Class, Error = Simple<Token>> {
         .labelled("class")
 }
 
+// parse_class_dec: 
+//  [class_var_dec]* [subroutine_dec]*
 fn parse_class_dec() -> impl Parser<Token, ClassDec, Error = Simple<Token>> {
     parse_class_var_dec()
         .repeated()
@@ -56,6 +71,8 @@ fn parse_class_dec() -> impl Parser<Token, ClassDec, Error = Simple<Token>> {
         .labelled("class declaration")
 }
 
+// parse_class_var_dec: 
+//  [class_var_type] [type] [var_name] (',' [var_name])* ';'
 fn parse_class_var_dec() -> impl Parser<Token, ClassVarDec, Error = Simple<Token>> {
     parse_class_var_type()
         .then(parse_type())
@@ -69,6 +86,8 @@ fn parse_class_var_dec() -> impl Parser<Token, ClassVarDec, Error = Simple<Token
         .labelled("class variable declaration")
 }
 
+// parse_class_var_type: 
+//  ('static' | 'field')
 fn parse_class_var_type() -> impl Parser<Token, ClassVarType, Error = Simple<Token>> {
     choice((
         kw(Keyword::Static).to(ClassVarType::Static),
@@ -77,6 +96,8 @@ fn parse_class_var_type() -> impl Parser<Token, ClassVarType, Error = Simple<Tok
     .labelled("class variable type")
 }
 
+// parse_subroutine_dec: 
+//  [subroutine_type] [subroutine_return_type] [subroutine_name] '(' [parameter_list] ')' [subroutine_body]
 fn parse_subroutine_dec() -> impl Parser<Token, SubroutineDec, Error = Simple<Token>> {
     parse_subroutine_type()
         .then(parse_subroutine_return_type())
@@ -100,6 +121,8 @@ fn parse_subroutine_dec() -> impl Parser<Token, SubroutineDec, Error = Simple<To
         .labelled("subroutine declaration")
 }
 
+// parse_subroutine_type:
+//  ('constructor' | 'function' | 'method')
 fn parse_subroutine_type() -> impl Parser<Token, SubroutineType, Error = Simple<Token>> {
     choice((
         kw(Keyword::Constructor).to(SubroutineType::Constructor),
@@ -109,6 +132,8 @@ fn parse_subroutine_type() -> impl Parser<Token, SubroutineType, Error = Simple<
     .labelled("subroutine type")
 }
 
+// parse_subroutine_return_type:
+//  ('void' | [type])
 fn parse_subroutine_return_type() -> impl Parser<Token, SubroutineReturnType, Error = Simple<Token>>
 {
     choice((
@@ -118,14 +143,19 @@ fn parse_subroutine_return_type() -> impl Parser<Token, SubroutineReturnType, Er
     .labelled("subroutine return type")
 }
 
-fn parse_parameter_list() -> impl Parser<Token, Vec<Parameter>, Error = Simple<Token>> {
+// parse_parameter_list:
+//  (([type] ([var_name]) (',' [type] [var_name])*))?
+fn parse_parameter_list() -> impl Parser<Token, Option<Vec<Parameter>>, Error = Simple<Token>> {
     (parse_type()
         .then(ident())
         .map(|(r#type, var_name)| Parameter { r#type, var_name }))
     .separated_by(sym(Symbol::Comma))
+    .or_not()
     .labelled("parameter list")
 }
 
+// parse_subroutine_body:
+//  '{' [var_dec]* [statement]* '}'
 fn parse_subroutine_body() -> impl Parser<Token, SubroutineBody, Error = Simple<Token>> {
     sym(Symbol::LCurly)
         .ignore_then(parse_var_dec().repeated())
@@ -135,6 +165,8 @@ fn parse_subroutine_body() -> impl Parser<Token, SubroutineBody, Error = Simple<
         .labelled("subroutine body")
 }
 
+// parse_var_dec:
+//  'var' [type] ([var_name] (','  [var_name])*) ';'
 fn parse_var_dec() -> impl Parser<Token, VarDec, Error = Simple<Token>> {
     kw(Keyword::Var)
         .ignore_then(parse_type())
@@ -145,6 +177,9 @@ fn parse_var_dec() -> impl Parser<Token, VarDec, Error = Simple<Token>> {
 }
 
 // Statements:
+
+// parse_statement:
+//  [let_statement] | [if_statement] | [while_statement] | [do_statement] | [return_statement]
 fn parse_statement() -> impl Parser<Token, Statement, Error = Simple<Token>> {
     recursive(|statement| {
         choice((
@@ -158,6 +193,8 @@ fn parse_statement() -> impl Parser<Token, Statement, Error = Simple<Token>> {
     })
 }
 
+// parse_let_statement:
+//  'let' [var_name] ('[' [expression] ']')? '=' [expression] ';'
 fn parse_let_statement() -> impl Parser<Token, LetStatement, Error = Simple<Token>> {
     kw(Keyword::Let)
         .ignore_then(ident())
@@ -178,6 +215,8 @@ fn parse_let_statement() -> impl Parser<Token, LetStatement, Error = Simple<Toke
         .labelled("let statement")
 }
 
+// parse_if_statement:
+//  'if' '(' [expression] ')' '{' [statement]* '}' ('else' '{' [statement]* '}')?
 fn parse_if_statement<P: Parser<Token, Statement, Error = Simple<Token>> + Clone>(
     statement: P,
 ) -> impl Parser<Token, IfStatement, Error = Simple<Token>> {
@@ -196,6 +235,7 @@ fn parse_if_statement<P: Parser<Token, Statement, Error = Simple<Token>> + Clone
             kw(Keyword::Else)
                 .ignore_then(
                     sym(Symbol::LCurly)
+                        // .ignore_then(statement.repeated())
                         .ignore_then(statement.clone().repeated())
                         .then_ignore(sym(Symbol::RCurly)),
                 )
@@ -209,6 +249,8 @@ fn parse_if_statement<P: Parser<Token, Statement, Error = Simple<Token>> + Clone
         .labelled("if statement")
 }
 
+// parse_while_statement:
+//  'while' '(' [expression] ')' '{' [statement]* '}'
 fn parse_while_statement(
     statement: impl Parser<Token, Statement, Error = Simple<Token>>,
 ) -> impl Parser<Token, WhileStatement, Error = Simple<Token>> {
@@ -227,6 +269,8 @@ fn parse_while_statement(
         .labelled("while statement")
 }
 
+// parse_do_statement:
+//  'do' [subroutine_call] ';'
 fn parse_do_statement() -> impl Parser<Token, DoStatement, Error = Simple<Token>> {
     kw(Keyword::Do)
         .ignore_then(parse_subroutine_call())
@@ -235,30 +279,41 @@ fn parse_do_statement() -> impl Parser<Token, DoStatement, Error = Simple<Token>
         .labelled("do statement")
 }
 
+// parse_return_statement:
+//  'return' [expression]? ';'
 fn parse_return_statement() -> impl Parser<Token, ReturnStatement, Error = Simple<Token>> {
     kw(Keyword::Return)
-        .ignore_then(parse_expression())
-        .or_not()
+        .ignore_then(parse_expression()).or_not()
         .then_ignore(sym(Symbol::Semicolon))
         .map(|r#return| ReturnStatement { r#return })
         .labelled("return statement")
 }
 
 // Expressions:
+
+// parse_expression:
+//  [term] ([binary_op] [term])*
 fn parse_expression() -> impl Parser<Token, Expression, Error = Simple<Token>> {
     parse_bin_expression()
         .or(parse_term().map(|t| Expression::Expr(t)))
         .labelled("expression")
 }
 
+// might need work:
+// parse_bin_expression:
+//  [term] [binary_op] [expression]
 fn parse_bin_expression() -> impl Parser<Token, Expression, Error = Simple<Token>> {
-    parse_term()
+    recursive(|expr| {
+        parse_term()
         .then(parse_binary_op())
-        .then(parse_term())
-        .map(|((t1, bop), t2)| Expression::Bin(t1, bop, t2))
+        .then(expr)
+        .map(|((t1, bop), t2)| Expression::Bin(t1, bop, Box::new(t2)))
         .labelled("binary expression")
+    })
 }
 
+// parse_binary_op:
+//  '+' | '-' | '*' | '/' | '&' | '|' | '<' | '>' | '='
 fn parse_binary_op() -> impl Parser<Token, BinaryOp, Error = Simple<Token>> {
     choice((
         sym(Symbol::Plus).to(BinaryOp::Plus),
@@ -273,6 +328,8 @@ fn parse_binary_op() -> impl Parser<Token, BinaryOp, Error = Simple<Token>> {
     ))
 }
 
+// parse_unary_op:
+//  '-' | '~'
 fn parse_unary_op() -> impl Parser<Token, UnaryOp, Error = Simple<Token>> {
     choice((
         sym(Symbol::Minus).to(UnaryOp::Negation),
@@ -280,6 +337,9 @@ fn parse_unary_op() -> impl Parser<Token, UnaryOp, Error = Simple<Token>> {
     ))
 }
 
+// parse_term:
+//  [integer_constant] | [string_constant] | [keyword_constant] | [var_name] ('[' [expression] ']')? 
+//  | '(' [expression] ')' | ([unary_op] [term]) | [subroutine_call]
 fn parse_term() -> impl Parser<Token, Term, Error = Simple<Token>> {
     recursive(|term| {
         // subroutine might need to be in .or with VarName
@@ -308,6 +368,8 @@ fn parse_term() -> impl Parser<Token, Term, Error = Simple<Token>> {
     })
 }
 
+// parse_keyword_constant:
+//  'true' | 'false' | 'null' | 'this'
 fn parse_keyword_constant() -> impl Parser<Token, KeywordConstant, Error = Simple<Token>> {
     choice((
         kw(Keyword::True).to(KeywordConstant::True),
@@ -318,24 +380,32 @@ fn parse_keyword_constant() -> impl Parser<Token, KeywordConstant, Error = Simpl
     .labelled("keyword constant")
 }
 
+// parse_subroutine_call:
+//  ([var_name] | [class_name]) '.' [subroutine_name] '(' [expression_list] ')' 
+//  | [subroutine_name] '(' [expression_list] ')'
 fn parse_subroutine_call() -> impl Parser<Token, SubroutineCall, Error = Simple<Token>> {
     ident()
         .then_ignore(sym(Symbol::Period))
         .then(ident())
-        .then(parse_expression_list())
+        .then_ignore(sym(Symbol::LParens)).then(parse_expression_list()).then_ignore(sym(Symbol::RParens))
         .map(|((c, s), es)| SubroutineCall::ClassCall(c, s, es))
         .or(ident()
-            .then(parse_expression_list())
+            .then_ignore(sym(Symbol::LParens)).then(parse_expression_list()).then_ignore(sym(Symbol::RParens))
             .map(|(s, es)| SubroutineCall::Call(s, es)))
         .labelled("subroutine call")
 }
 
-fn parse_expression_list() -> impl Parser<Token, Vec<Expression>, Error = Simple<Token>> {
+// parse_expression_list:
+//  ([expression] (',' [expression]) *)?
+fn parse_expression_list() -> impl Parser<Token, Option<Vec<Expression>>, Error = Simple<Token>> {
     parse_expression()
         .separated_by(sym(Symbol::Comma))
-        .labelled("expression(s)")
+        .or_not()
+        .labelled("expression list")
 }
 
+// parse_type:
+//  'int' | 'char' | 'boolean' | [class_name]
 fn parse_type() -> impl Parser<Token, Type, Error = Simple<Token>> {
     choice((
         kw(Keyword::Int).to(Type::Int),

@@ -68,6 +68,9 @@ mod tests {
         }
     }
 
+
+    // Might need to manually convert to LF every time
+
     // Lexer tests:
     #[test]
     fn test_lexer_arraytest_main() {
@@ -94,5 +97,29 @@ mod tests {
     // #[test]
     // fn test_parser_arraytest_main() {
     //     test_parser("tests/parser/ArrayTest/Main");
+    // }
+
+    // fn test_parser(file: &str) {
+    //     let jack_path: String = format!("{}.jack", file); // Create a new String
+    //     let exp_path: String = format!("{}.xml", file); // Create a new String
+    //     let act_path: String = format!("{}T.xml", file); // Create a new String
+
+    //     let r_tokens = crate::tokenize_jack_file(&jack_path);
+    //     match r_tokens {
+    //         Ok(tokens) => {
+    //             let token_string = tokens
+    //                 .iter()
+    //                 .map(|token| format!("{}", crate::lexer::print_token(token.clone())))
+    //                 .collect::<Vec<String>>()
+    //                 .join("\n");
+    //             std::fs::write(
+    //                 act_path.clone(),
+    //                 format!("<tokens>\n{}\n</tokens>\n", token_string),);
+    //             let actual = std::path::Path::new(&act_path);
+    //             let expected = std::path::Path::new(&exp_path);
+    //             assert!(compare_files(actual,expected), "{} and {} do not match", act_path, exp_path)
+    //         }
+    //         Err(e) => todo!(),
+    //     }
     // }
 }

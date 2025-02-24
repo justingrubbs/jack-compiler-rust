@@ -4,7 +4,7 @@
 #[derive(Debug, Clone)]
 pub struct Class {
     pub class_name: String,
-    pub class_dec: Vec<ClassDec>,
+    pub class_dec: ClassDec,
 }
 
 #[derive(Debug, Clone)]
@@ -39,7 +39,7 @@ pub struct SubroutineDec {
     pub subroutine_type: SubroutineType,
     pub subroutine_return_type: SubroutineReturnType,
     pub subroutine_name: String,
-    pub parameter_list: Vec<Parameter>,
+    pub parameter_list: Option<Vec<Parameter>>,
     pub subroutine_body: SubroutineBody,
 }
 
@@ -118,7 +118,7 @@ pub struct ReturnStatement {
 #[derive(Debug, Clone)]
 pub enum Expression {
     Expr(Term),
-    Bin(Term, BinaryOp, Term),
+    Bin(Term, BinaryOp, Box<Expression>),
 }
 
 #[derive(Debug, Clone)]
@@ -134,8 +134,8 @@ pub enum Term {
 
 #[derive(Debug, Clone)]
 pub enum SubroutineCall {
-    Call(String, Vec<Expression>),
-    ClassCall(String, String, Vec<Expression>),
+    Call(String, Option<Vec<Expression>>),
+    ClassCall(String, String, Option<Vec<Expression>>),
 }
 
 #[derive(Debug, Clone)]
