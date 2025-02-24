@@ -3,13 +3,12 @@ use crate::lexer::*;
 use crate::parser::*;
 
 use std::fs;
-use std::process::Command;
 use std::path::Path;
-
+use std::process::Command;
 
 #[cfg(test)]
 mod tests {
-    
+
     fn compare_files(actual: &std::path::Path, expected: &std::path::Path) -> bool {
         let actual_content = std::fs::read_to_string(actual).unwrap();
         let expected_content = std::fs::read_to_string(expected).unwrap();
@@ -19,7 +18,7 @@ mod tests {
     fn get_file_names(dir: &str) -> Vec<String> {
         let path = std::path::Path::new(dir);
         let mut file_names = Vec::new();
-    
+
         if let Ok(entries) = std::fs::read_dir(path) {
             for entry in entries.flatten() {
                 let file_path = entry.path();
@@ -38,10 +37,9 @@ mod tests {
         let act = std::path::Path::new("tests/lexer/Square/MainT.xml");
         let exp = std::path::Path::new("tests/lexer/Square/Main.xml");
 
-        let b = compare_files(act,exp);
+        let b = compare_files(act, exp);
         assert!(b, "Files are not equivalent")
     }
-
 
     // Input is without file extension
     fn test_lexer(file: &str) {
@@ -59,15 +57,20 @@ mod tests {
                     .join("\n");
                 std::fs::write(
                     act_path.clone(),
-                    format!("<tokens>\n{}\n</tokens>\n", token_string),);
+                    format!("<tokens>\n{}\n</tokens>\n", token_string),
+                );
                 let actual = std::path::Path::new(&act_path);
                 let expected = std::path::Path::new(&exp_path);
-                assert!(compare_files(actual,expected), "{} and {} do not match", act_path, exp_path)
+                assert!(
+                    compare_files(actual, expected),
+                    "{} and {} do not match",
+                    act_path,
+                    exp_path
+                )
             }
             Err(e) => todo!(),
         }
     }
-
 
     // Might need to manually convert to LF every time
 
@@ -91,7 +94,6 @@ mod tests {
     fn test_lexer_square_squaregame() {
         test_lexer("tests/lexer/Square/SquareGame");
     }
-
 
     // Parser tests:
     // #[test]

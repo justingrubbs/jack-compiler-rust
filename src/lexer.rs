@@ -166,9 +166,14 @@ fn parse_identifier() -> impl Parser<char, String, Error = Simple<char>> {
         .padded()
 }
 
-impl fmt::Display for Keyword {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let keyword_str = match self {
+// Printing:
+pub fn print_token(token: Token) -> String {
+    format!("{}", token.as_str())
+}
+
+impl Keyword {
+    fn as_str(&self) -> &'static str {
+        match self {
             Keyword::Class => "class",
             Keyword::Constructor => "constructor",
             Keyword::Function => "function",
@@ -190,14 +195,13 @@ impl fmt::Display for Keyword {
             Keyword::Else => "else",
             Keyword::While => "while",
             Keyword::Return => "return",
-        };
-        write!(f, "{keyword_str}")
+        }
     }
 }
 
-impl fmt::Display for Symbol {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let symbol_str = match self {
+impl Symbol {
+    fn as_str(&self) -> &'static str {
+        match self {
             Symbol::LCurly => "{",
             Symbol::RCurly => "}",
             Symbol::LBracket => "[",
@@ -217,23 +221,18 @@ impl fmt::Display for Symbol {
             Symbol::Greater => "&gt;",
             Symbol::Equal => "=",
             Symbol::Tilde => "~",
-        };
-        write!(f, "{symbol_str}")
-    }
-}
-
-impl fmt::Display for Token {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Token::Keyword(k) => write!(f, "<keyword> {} </keyword>", k),
-            Token::Symbol(s) => write!(f, "<symbol> {} </symbol>", s),
-            Token::Integer(i) => write!(f, "<integerConstant> {} </integerConstant>", i),
-            Token::String(s) => write!(f, "<stringConstant> {} </stringConstant>", s),
-            Token::Identifier(s) => write!(f, "<identifier> {} </identifier>", s),
         }
     }
 }
 
-pub fn print_token(token: Token) -> String {
-    format!("{}", token)
+impl Token {
+    fn as_str(&self) -> String {
+        match self {
+            Token::Keyword(k) => format!("<keyword> {} </keyword>", k.as_str()),
+            Token::Symbol(s) => format!("<symbol> {} </symbol>", s.as_str()),
+            Token::Integer(i) => format!("<integerConstant> {} </integerConstant>", i.to_string()),
+            Token::String(s) => format!("<stringConstant> {} </stringConstant>", s),
+            Token::Identifier(s) => format!("<identifier> {} </identifier>", s),
+        }
+    }
 }

@@ -38,11 +38,10 @@ fn string_const() -> impl Parser<Token, String, Error = Simple<Token>> {
 // [x]?         : x appears 0 or 1 times
 // [x]*         : x appears 0 or more times
 
-
 // Program structure:
 
-// parse_class: 
-//  'class' [class_name] '{' [class_dec] '}' 
+// parse_class:
+//  'class' [class_name] '{' [class_dec] '}'
 pub fn parse_class() -> impl Parser<Token, Class, Error = Simple<Token>> {
     kw(Keyword::Class)
         .ignore_then(ident())
@@ -56,7 +55,7 @@ pub fn parse_class() -> impl Parser<Token, Class, Error = Simple<Token>> {
         .labelled("class")
 }
 
-// parse_class_dec: 
+// parse_class_dec:
 //  [class_var_dec]* [subroutine_dec]*
 fn parse_class_dec() -> impl Parser<Token, ClassDec, Error = Simple<Token>> {
     parse_class_var_dec()
@@ -69,7 +68,7 @@ fn parse_class_dec() -> impl Parser<Token, ClassDec, Error = Simple<Token>> {
         .labelled("class declaration")
 }
 
-// parse_class_var_dec: 
+// parse_class_var_dec:
 //  [class_var_type] [type] [var_name] (',' [var_name])* ';'
 fn parse_class_var_dec() -> impl Parser<Token, ClassVarDec, Error = Simple<Token>> {
     parse_class_var_type()
@@ -84,7 +83,7 @@ fn parse_class_var_dec() -> impl Parser<Token, ClassVarDec, Error = Simple<Token
         .labelled("class variable declaration")
 }
 
-// parse_class_var_type: 
+// parse_class_var_type:
 //  ('static' | 'field')
 fn parse_class_var_type() -> impl Parser<Token, ClassVarType, Error = Simple<Token>> {
     choice((
@@ -94,7 +93,7 @@ fn parse_class_var_type() -> impl Parser<Token, ClassVarType, Error = Simple<Tok
     .labelled("class variable type")
 }
 
-// parse_subroutine_dec: 
+// parse_subroutine_dec:
 //  [subroutine_type] [subroutine_return_type] [subroutine_name] '(' [parameter_list] ')' [subroutine_body]
 fn parse_subroutine_dec() -> impl Parser<Token, SubroutineDec, Error = Simple<Token>> {
     parse_subroutine_type()
@@ -281,7 +280,8 @@ fn parse_do_statement() -> impl Parser<Token, DoStatement, Error = Simple<Token>
 //  'return' [expression]? ';'
 fn parse_return_statement() -> impl Parser<Token, ReturnStatement, Error = Simple<Token>> {
     kw(Keyword::Return)
-        .ignore_then(parse_expression()).or_not()
+        .ignore_then(parse_expression())
+        .or_not()
         .then_ignore(sym(Symbol::Semicolon))
         .map(|r#return| ReturnStatement { r#return })
         .labelled("return statement")
@@ -303,10 +303,10 @@ fn parse_expression() -> impl Parser<Token, Expression, Error = Simple<Token>> {
 fn parse_bin_expression() -> impl Parser<Token, Expression, Error = Simple<Token>> {
     recursive(|expr| {
         parse_term()
-        .then(parse_binary_op())
-        .then(expr)
-        .map(|((t1, bop), t2)| Expression::Bin(t1, bop, Box::new(t2)))
-        .labelled("binary expression")
+            .then(parse_binary_op())
+            .then(expr)
+            .map(|((t1, bop), t2)| Expression::Bin(t1, bop, Box::new(t2)))
+            .labelled("binary expression")
     })
 }
 
@@ -336,7 +336,7 @@ fn parse_unary_op() -> impl Parser<Token, UnaryOp, Error = Simple<Token>> {
 }
 
 // parse_term:
-//  [integer_constant] | [string_constant] | [keyword_constant] | [var_name] ('[' [expression] ']')? 
+//  [integer_constant] | [string_constant] | [keyword_constant] | [var_name] ('[' [expression] ']')?
 //  | '(' [expression] ')' | ([unary_op] [term]) | [subroutine_call]
 fn parse_term() -> impl Parser<Token, Term, Error = Simple<Token>> {
     recursive(|term| {
@@ -379,16 +379,20 @@ fn parse_keyword_constant() -> impl Parser<Token, KeywordConstant, Error = Simpl
 }
 
 // parse_subroutine_call:
-//  ([var_name] | [class_name]) '.' [subroutine_name] '(' [expression_list] ')' 
+//  ([var_name] | [class_name]) '.' [subroutine_name] '(' [expression_list] ')'
 //  | [subroutine_name] '(' [expression_list] ')'
 fn parse_subroutine_call() -> impl Parser<Token, SubroutineCall, Error = Simple<Token>> {
     ident()
         .then_ignore(sym(Symbol::Period))
         .then(ident())
-        .then_ignore(sym(Symbol::LParens)).then(parse_expression_list()).then_ignore(sym(Symbol::RParens))
+        .then_ignore(sym(Symbol::LParens))
+        .then(parse_expression_list())
+        .then_ignore(sym(Symbol::RParens))
         .map(|((c, s), es)| SubroutineCall::ClassCall(c, s, es))
         .or(ident()
-            .then_ignore(sym(Symbol::LParens)).then(parse_expression_list()).then_ignore(sym(Symbol::RParens))
+            .then_ignore(sym(Symbol::LParens))
+            .then(parse_expression_list())
+            .then_ignore(sym(Symbol::RParens))
             .map(|(s, es)| SubroutineCall::Call(s, es)))
         .labelled("subroutine call")
 }

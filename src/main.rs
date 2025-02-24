@@ -23,8 +23,6 @@ fn main() -> Result<(), Error> {
     let metadata = fs::metadata(path)?;
 
     if metadata.is_file() {
-
-
         // turn to function
         let tokens = tokenize_jack_file(path)?;
         let token_string = tokens
@@ -33,7 +31,6 @@ fn main() -> Result<(), Error> {
             .collect::<Vec<String>>()
             .join("\n");
         let output_path = format!("{}T.xml", path.trim_end_matches(".jack"));
-
 
         // Write the token string to the file
         fs::write(
@@ -80,9 +77,3 @@ pub fn tokenize_jack_file(file_path: &str) -> Result<Vec<crate::lexer::Token>, E
     //     Err(e) => Err(e),
     // }
 }
-
-
-
-
-
-
