@@ -67,13 +67,11 @@ pub fn tokenize_jack_file(file_path: &str) -> Result<Vec<crate::lexer::Token>, E
     crate::lexer::tokenize()
         .parse(contents)
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)))
+}
 
-    // match tokens {
-    //     Ok(token_vec) => match crate::parser::parse_class().parse(token_vec)
-    //         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e))) {
-    //         Ok(parsed) => Ok(crate::parser::print_class(parsed)),
-    //         Err(e) => Err(e),
-    //     },
-    //     Err(e) => Err(e),
-    // }
+pub fn parse_jack_file(file_path: &str) -> Result<crate::ast::jack::Class, Error> {
+    let tokens = tokenize_jack_file(file_path)?;
+    crate::parser::parse_class()
+        .parse(tokens)
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)))
 }

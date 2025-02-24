@@ -34,11 +34,16 @@ mod tests {
 
     #[test]
     fn test_compare_files() {
-        let act = std::path::Path::new("tests/lexer/Square/MainT.xml");
-        let exp = std::path::Path::new("tests/lexer/Square/Main.xml");
+        let act1 = std::path::Path::new("tests/unit_tests/goodCompareT.txt");
+        let exp1 = std::path::Path::new("tests/unit_tests/goodCompare.txt");
+        let act2 = std::path::Path::new("tests/unit_tests/badCompareT.txt");
+        let exp2 = std::path::Path::new("tests/unit_tests/badCompare.txt");
 
-        let b = compare_files(act, exp);
-        assert!(b, "Files are not equivalent")
+        let good = compare_files(act1, exp1);
+        assert!(good, "Files are not equivalent");
+
+        let bad = compare_files(act2, exp2);
+        assert!(!bad, "Files are equivalent");
     }
 
     // Input is without file extension
@@ -68,7 +73,10 @@ mod tests {
                     exp_path
                 )
             }
-            Err(e) => todo!(),
+            Err(e) => {
+                eprintln!("Error tokenizing {}: {:?}", jack_path, e);
+                panic!("Failed to tokenize Jack file: {}", jack_path);
+            },
         }
     }
 
@@ -96,32 +104,32 @@ mod tests {
     }
 
     // Parser tests:
-    // #[test]
-    // fn test_parser_arraytest_main() {
-    //     test_parser("tests/parser/ArrayTest/Main");
-    // }
+    #[test]
+    fn test_parser_arraytest_main() {
+        test_parser("tests/parser/ArrayTest/Main");
+    }
 
-    // fn test_parser(file: &str) {
-    //     let jack_path: String = format!("{}.jack", file); // Create a new String
-    //     let exp_path: String = format!("{}.xml", file); // Create a new String
-    //     let act_path: String = format!("{}T.xml", file); // Create a new String
+    fn test_parser(file: &str) {
+        let jack_path: String = format!("{}.jack", file);
+        let exp_path: String = format!("{}.xml", file);
+        let act_path: String = format!("{}T.xml", file);
 
-    //     let r_tokens = crate::tokenize_jack_file(&jack_path);
-    //     match r_tokens {
-    //         Ok(tokens) => {
-    //             let token_string = tokens
-    //                 .iter()
-    //                 .map(|token| format!("{}", crate::lexer::print_token(token.clone())))
-    //                 .collect::<Vec<String>>()
-    //                 .join("\n");
-    //             std::fs::write(
-    //                 act_path.clone(),
-    //                 format!("<tokens>\n{}\n</tokens>\n", token_string),);
-    //             let actual = std::path::Path::new(&act_path);
-    //             let expected = std::path::Path::new(&exp_path);
-    //             assert!(compare_files(actual,expected), "{} and {} do not match", act_path, exp_path)
-    //         }
-    //         Err(e) => todo!(),
-    //     }
-    // }
+        let r_class = crate::parse_jack_file(&jack_path);
+        match r_class {
+            Ok(class) => {
+                let class_string = crate::parser::print_class(class);
+                std::fs::write(
+                    act_path.clone(),
+                    class_string
+                );
+                let actual = std::path::Path::new(&act_path);
+                let expected = std::path::Path::new(&exp_path);
+                assert!(compare_files(actual,expected), "{} and {} do not match", act_path, exp_path)
+            },
+            Err(e) => {
+                eprintln!("Error parsing {}: {:?}", jack_path, e);
+                panic!("Failed to parse Jack file: {}", jack_path);
+            },
+        }
+    }
 }

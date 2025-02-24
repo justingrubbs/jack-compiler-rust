@@ -418,13 +418,32 @@ fn parse_type() -> impl Parser<Token, Type, Error = Simple<Token>> {
     .labelled("type")
 }
 
-// impl fmt::Display for Class {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//         write!(f, "class {} {{\n{}\n}}", self.class_name, self.class_dec)
-//     }
-// }
 
-// // Pretty-printing:
-// pub fn print_class(class: Class) -> Vec<String> {
-//     format!("{}",class)
-// }
+// Printing class:
+pub fn print_class(class: Class) -> String {
+    format!("{}",class.as_str())
+}
+
+fn tab_length(i: i16) -> String {
+    "/t".repeat(i as usize)
+}
+
+impl Class {
+    fn as_str(&self) -> String {
+        let mut class_str = format!("<class>\n");
+        class_str.push_str(&format!("\t<keyword> class </keyword>\n"));
+        class_str.push_str(&format!("\t<identifier> {} </identifier>\n", self.class_name));
+
+        // Assuming class_dec has its own as_str method.
+        class_str.push_str(&self.class_dec.as_str(1)); // Call to as_str() for ClassDec.
+        class_str.push_str("</class>");
+        class_str
+    }
+}
+
+impl ClassDec {
+    fn as_str(&self, indent: i16) -> String {
+        "test".to_string()
+    }
+}
+
