@@ -1,10 +1,9 @@
-use std::fmt;
 use chumsky::prelude::*;
-
+use std::fmt;
 
 // Figure 10.2 on page 194 of "The Elements of Computing Systems"
 
-#[derive(Debug,Clone,PartialEq,Eq,Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Token {
     Keyword(Keyword),
     Symbol(Symbol),
@@ -13,7 +12,7 @@ pub enum Token {
     Identifier(String), // sequence of letters, digits, and underscore, not starting with digit
 }
 
-#[derive(Debug,Clone,PartialEq,Eq,Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Keyword {
     Class,
     Constructor,
@@ -38,7 +37,7 @@ pub enum Keyword {
     Return,
 }
 
-#[derive(Debug,Clone,PartialEq,Eq,Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Symbol {
     LCurly,
     RCurly,
@@ -63,27 +62,22 @@ pub enum Symbol {
 
 // Lexer:
 pub fn tokenize() -> impl Parser<char, Vec<Token>, Error = Simple<char>> {
-    parse_comment().repeated().ignore_then(parse_token()).repeated()
+    parse_comment()
+        .repeated()
+        .ignore_then(parse_token())
+        .repeated()
 }
 
 fn parse_comment() -> impl Parser<char, (), Error = Simple<char>> {
     let single_line_comment = just("//")
         .then_ignore(filter(|&c| c != '\n').repeated())
         .padded();
-    
-    let multi_line_comment = just("/*")
-        .then_ignore(take_until(just("*/")))
-        .padded();
 
-    let api_comment = just("/**")
-        .then_ignore(take_until(just("*/")))
-        .padded();
-    
-    choice((
-        single_line_comment,
-        multi_line_comment,
-        api_comment,
-    )).ignored()
+    let multi_line_comment = just("/*").then_ignore(take_until(just("*/"))).padded();
+
+    let api_comment = just("/**").then_ignore(take_until(just("*/"))).padded();
+
+    choice((single_line_comment, multi_line_comment, api_comment)).ignored()
 }
 
 fn parse_token() -> impl Parser<char, Token, Error = Simple<char>> {
@@ -119,7 +113,8 @@ fn parse_keyword() -> impl Parser<char, Keyword, Error = Simple<char>> {
         just("else").to(Keyword::Else),
         just("while").to(Keyword::While),
         just("return").to(Keyword::Return),
-    )).padded()
+    ))
+    .padded()
 }
 
 fn parse_symbol() -> impl Parser<char, Symbol, Error = Simple<char>> {
@@ -143,7 +138,8 @@ fn parse_symbol() -> impl Parser<char, Symbol, Error = Simple<char>> {
         just('>').to(Symbol::Greater),
         just('=').to(Symbol::Equal),
         just('~').to(Symbol::Tilde),
-    )).padded()
+    ))
+    .padded()
 }
 
 fn parse_num() -> impl Parser<char, i16, Error = Simple<char>> {
@@ -154,8 +150,9 @@ fn parse_num() -> impl Parser<char, i16, Error = Simple<char>> {
 
 fn parse_string() -> impl Parser<char, String, Error = Simple<char>> {
     let valid_char = filter(|&c: &char| c != '"' && c != '\n');
-    valid_char.repeated()
-        .delimited_by('"','"')
+    valid_char
+        .repeated()
+        .delimited_by('"', '"')
         .collect::<String>()
         .padded()
 }
@@ -163,7 +160,8 @@ fn parse_string() -> impl Parser<char, String, Error = Simple<char>> {
 fn parse_identifier() -> impl Parser<char, String, Error = Simple<char>> {
     let starting_char = filter(|&c: &char| c.is_alphabetic() || c == '_');
     let follow_char = filter(|&c: &char| c.is_alphanumeric() || c == '_');
-    starting_char.chain(follow_char.repeated())
+    starting_char
+        .chain(follow_char.repeated())
         .collect::<String>()
         .padded()
 }
