@@ -116,9 +116,9 @@ pub struct ReturnStatement {
 
 // Expressions:
 #[derive(Debug, Clone)]
-pub enum Expression {
-    Expr(Term),
-    Bin(Term, BinaryOp, Box<Expression>),
+pub struct Expression {
+    pub expr: Term,
+    pub bin: Vec<(BinaryOp, Term)>,
 }
 
 #[derive(Debug, Clone)]
@@ -134,8 +134,8 @@ pub enum Term {
 
 #[derive(Debug, Clone)]
 pub enum SubroutineCall {
-    Call(String, Option<Vec<Expression>>),
-    ClassCall(String, String, Option<Vec<Expression>>),
+    Call(String, Vec<Expression>),
+    ClassCall(String, String, Vec<Expression>),
 }
 
 #[derive(Debug, Clone)]
