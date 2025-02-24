@@ -5,6 +5,7 @@ mod ast {
 }
 mod lexer;
 mod parser;
+mod tests;
 
 use std::env;
 use std::fs;
@@ -64,7 +65,7 @@ fn main() -> Result<(), Error> {
 }
 
 // Function to parse a single Jack file
-fn tokenize_jack_file(file_path: &str) -> Result<Vec<crate::lexer::Token>, Error> {
+pub fn tokenize_jack_file(file_path: &str) -> Result<Vec<crate::lexer::Token>, Error> {
     let contents = fs::read_to_string(file_path)?;
     crate::lexer::tokenize()
         .parse(contents)

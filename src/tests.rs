@@ -42,6 +42,7 @@ mod tests {
         assert!(b, "Files are not equivalent")
     }
 
+
     // Input is without file extension
     fn test_lexer(file: &str) {
         let jack_path: String = format!("{}.jack", file); // Create a new String
@@ -67,35 +68,31 @@ mod tests {
         }
     }
 
+    // Lexer tests:
     #[test]
-    fn run_lexer_tests() {
+    fn test_lexer_arraytest_main() {
+        test_lexer("tests/lexer/ArrayTest/Main");
+    }
+
+    #[test]
+    fn test_lexer_square_main() {
         test_lexer("tests/lexer/Square/Main");
     }
 
+    #[test]
+    fn test_lexer_square_square() {
+        test_lexer("tests/lexer/Square/Square");
+    }
+
+    #[test]
+    fn test_lexer_square_squaregame() {
+        test_lexer("tests/lexer/Square/SquareGame");
+    }
+
+
+    // Parser tests:
     // #[test]
-    // fn test_get_file_names() {
-    //     let files = get_file_names("tests/lexer/Square/"); // Ensure this directory exists
-    //     assert!(!files.is_empty(), "No .jack files found!");
-        
-    //     for file in &files {
-    //         println!("{}", file);
-    //     }
+    // fn test_parser_arraytest_main() {
+    //     test_parser("tests/parser/ArrayTest/Main");
     // }
-
-    // #[test]
-    // fn test_compilation_stage() {
-    //     let test_file = "tests/example.jack";
-    //     let expected_output = "tests/expected_output.vm";
-    //     let actual_output = "output.vm"; // Adjust this to match your output path
-
-    //     // Run your compiler
-    //     std::process::Command::new("cargo") // or the command you use to run your compiler
-    //         .args(&["run", test_file, "-o", actual_output])
-    //         .status()
-    //         .expect("Failed to run compiler");
-
-    //     // Compare output
-    //     assert!(compare_files(expected_output, actual_output), "Output does not match expected output.");
-    // }
-
 }
