@@ -22,8 +22,10 @@ fn main() -> Result<(), Error> {
     let metadata = fs::metadata(path)?;
 
     if metadata.is_file() {
+
+
         // turn to function
-        let tokens = parse_jack_file(path)?;
+        let tokens = tokenize_jack_file(path)?;
         let token_string = tokens
             .iter()
             .map(|token| format!("{}", crate::lexer::print_token(token.clone())))
@@ -31,10 +33,11 @@ fn main() -> Result<(), Error> {
             .join("\n");
         let output_path = format!("{}T.xml", path.trim_end_matches(".jack"));
 
+
         // Write the token string to the file
         fs::write(
             output_path,
-            format!("<tokens>\n{}\n</tokens>", token_string),
+            format!("<tokens>\n{}\n</tokens>\n", token_string),
         )?;
     }
     // else if metadata.is_dir() {
@@ -61,7 +64,7 @@ fn main() -> Result<(), Error> {
 }
 
 // Function to parse a single Jack file
-fn parse_jack_file(file_path: &str) -> Result<Vec<crate::lexer::Token>, Error> {
+fn tokenize_jack_file(file_path: &str) -> Result<Vec<crate::lexer::Token>, Error> {
     let contents = fs::read_to_string(file_path)?;
     crate::lexer::tokenize()
         .parse(contents)
@@ -76,3 +79,9 @@ fn parse_jack_file(file_path: &str) -> Result<Vec<crate::lexer::Token>, Error> {
     //     Err(e) => Err(e),
     // }
 }
+
+
+
+
+
+

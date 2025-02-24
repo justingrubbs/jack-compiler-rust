@@ -1,2 +1,20 @@
+Step 1: automate testing
+Step 2: add comments to parser
+Step 3: printer for jack ast
+Step 4: test parser
+
+
+
  - Add comments to parser
  - Add integration tests using `cargo test`
+ - Make sure parsing errors are working
+
+
+// For integration testing:
+//  - Generate a xml file with `T`, check it against normal xml file
+//  - function that compares files
+//  - Way to display Jack AST in xml format
+
+// for manual can just run `./tools/TextComparer.sh test/lexer/ArrayTest/Main.xml test/lexer/ArrayTest/MainT.xml`
+
+// all tests in test/lexer/ manually executed and passed
