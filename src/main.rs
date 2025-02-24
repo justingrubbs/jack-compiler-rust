@@ -32,7 +32,7 @@ fn main() -> Result<(), Error> {
         let output_path = format!("{}T.xml", path.trim_end_matches(".jack")); 
 
         // Write the token string to the file
-        fs::write(output_path, token_string)?;
+        fs::write(output_path, format!("<tokens>\n{}\n</tokens>",token_string))?;
     } 
     // else if metadata.is_dir() {
     //     // If it's a directory, parse all .jack files

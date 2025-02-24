@@ -245,6 +245,7 @@ fn parse_unary_op() -> impl Parser<Token, UnaryOp, Error = Simple<Token>> {
 
 fn parse_term() -> impl Parser<Token, Term, Error = Simple<Token>> {
     recursive(|term| {
+        // subroutine might need to be in .or with VarName
         choice((
             int_const().map(Term::IntegerConstant),
             string_const().map(Term::StringConstant),
