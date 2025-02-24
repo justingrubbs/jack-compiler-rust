@@ -1,4 +1,3 @@
-
 // Program Structure (Figure 10.5):
 //      A Jack program is a a collection of classes, each appearing in a separate file.
 //      The compilation unit is a class. A class is a sequence of tokens, as follows:

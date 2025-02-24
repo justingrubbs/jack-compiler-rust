@@ -23,10 +23,11 @@ fn main() -> Result<(), Error> {
     let metadata = fs::metadata(path)?;
     
     if metadata.is_file() {
+        // turn to function
         let tokens = parse_jack_file(path)?;
         let token_string = tokens
             .iter()
-            .map(|token| format!("{}", token))
+            .map(|token| format!("{}", crate::lexer::print_token(token.clone())))
             .collect::<Vec<String>>()
             .join("\n");
         let output_path = format!("{}T.xml", path.trim_end_matches(".jack")); 
@@ -58,12 +59,13 @@ fn main() -> Result<(), Error> {
 }
 
 
-
 // Function to parse a single Jack file
-fn parse_jack_file(file_path: &str) -> Result<Vec<String>, Error> {
+fn parse_jack_file(file_path: &str) -> Result<Vec<crate::lexer::Token>, Error> {
     let contents = fs::read_to_string(file_path)?;
-    let tokens = crate::lexer::tokenize().parse(contents)
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)));
+    crate::lexer::tokenize().parse(contents)
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)))
+
+        
     // match tokens {
     //     Ok(token_vec) => match crate::parser::parse_class().parse(token_vec)
     //         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e))) {
@@ -74,11 +76,5 @@ fn parse_jack_file(file_path: &str) -> Result<Vec<String>, Error> {
     // }
 
 
-    match tokens {
-        Ok(token_vec) => Ok(token_vec.into_iter()
-            .map(crate::lexer::print_token)
-            .collect()),
-        Err(e) => Err(e),
-    }
 }
 

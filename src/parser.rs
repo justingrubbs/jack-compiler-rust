@@ -305,13 +305,6 @@ fn parse_type() -> impl Parser<Token, Type, Error = Simple<Token>> {
 }
 
 
-
-
-
-
-
-
-
 // impl fmt::Display for Class {
 //     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 //         write!(f, "class {} {{\n{}\n}}", self.class_name, self.class_dec)
