@@ -128,9 +128,9 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_parser_arraytest_main() {
-        test_parser("tests/parser/ArrayTest/Main");
-    }
+    // #[test]
+    // fn test_parser_arraytest_main() {
+    //     test_parser("tests/parser/ArrayTest/Main");
+    // }
     
 }

@@ -23,10 +23,9 @@ fn main() -> Result<(), Error> {
     let metadata = fs::metadata(path)?;
 
     if metadata.is_file() {
-        // turn to function
+
         let class = parse_jack_file(path)?;
         let class_string = crate::parser::print_class(class);
-
         let output_path = format!("{}T.xml", path.trim_end_matches(".jack"));
 
         fs::write(
@@ -57,7 +56,7 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
-// Function to parse a single Jack file
+// Tokenize a single Jack file
 pub fn tokenize_jack_file(file_path: &str) -> Result<Vec<crate::lexer::Token>, Error> {
     let contents = fs::read_to_string(file_path)?;
     crate::lexer::tokenize()
@@ -65,6 +64,7 @@ pub fn tokenize_jack_file(file_path: &str) -> Result<Vec<crate::lexer::Token>, E
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)))
 }
 
+// Parse a single Jack file
 pub fn parse_jack_file(file_path: &str) -> Result<crate::ast::jack::Class, Error> {
     let tokens = tokenize_jack_file(file_path)?;
     crate::parser::parse_class()
