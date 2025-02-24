@@ -1,5 +1,3 @@
-use std::fmt;
-
 use crate::ast::jack::*;
 use crate::lexer::*;
 use chumsky::prelude::*;
