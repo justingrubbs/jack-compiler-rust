@@ -104,11 +104,6 @@ mod tests {
     }
 
     // Parser tests:
-    #[test]
-    fn test_parser_arraytest_main() {
-        test_parser("tests/parser/ArrayTest/Main");
-    }
-
     fn test_parser(file: &str) {
         let jack_path: String = format!("{}.jack", file);
         let exp_path: String = format!("{}.xml", file);
@@ -132,4 +127,10 @@ mod tests {
             },
         }
     }
+
+    #[test]
+    fn test_parser_arraytest_main() {
+        test_parser("tests/parser/ArrayTest/Main");
+    }
+    
 }

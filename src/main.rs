@@ -24,18 +24,14 @@ fn main() -> Result<(), Error> {
 
     if metadata.is_file() {
         // turn to function
-        let tokens = tokenize_jack_file(path)?;
-        let token_string = tokens
-            .iter()
-            .map(|token| format!("{}", crate::lexer::print_token(token.clone())))
-            .collect::<Vec<String>>()
-            .join("\n");
+        let class = parse_jack_file(path)?;
+        let class_string = crate::parser::print_class(class);
+
         let output_path = format!("{}T.xml", path.trim_end_matches(".jack"));
 
-        // Write the token string to the file
         fs::write(
             output_path,
-            format!("<tokens>\n{}\n</tokens>\n", token_string),
+            class_string,
         )?;
     }
     // else if metadata.is_dir() {

@@ -1,0 +1,2 @@
+This is a test to demonstrate
+that similar files are correctly compared.
