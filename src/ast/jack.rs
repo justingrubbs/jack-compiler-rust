@@ -78,8 +78,8 @@ pub struct VarDec {
 #[derive(Debug, Clone)]
 pub enum Statement {
     LetStatement(String, Option<Expression>, Expression),
-    IfStatement(Expression,Vec<Statement>,Option<Vec<Statement>>),
-    WhileStatement(Expression,Vec<Statement>),
+    IfStatement(Expression, Vec<Statement>, Option<Vec<Statement>>),
+    WhileStatement(Expression, Vec<Statement>),
     DoStatement(SubroutineCall),
     ReturnStatement(Option<Expression>),
 }

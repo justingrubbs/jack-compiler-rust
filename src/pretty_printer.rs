@@ -2,7 +2,6 @@ use crate::ast::jack::*;
 
 use itertools::Itertools;
 
-
 // Pretty-printing:
 fn tab(i: usize) -> String {
     "    ".repeat(i)
@@ -14,23 +13,29 @@ pub trait PrettyPrint {
 
 impl PrettyPrint for Class {
     fn pretty_print(&self, i: usize) -> String {
-        format!("class {} {{\n{}\n}}\n",self.class_name,self.class_dec.pretty_print(i+1))
+        format!(
+            "class {} {{\n{}\n}}\n",
+            self.class_name,
+            self.class_dec.pretty_print(i + 1)
+        )
     }
 }
 
 impl PrettyPrint for ClassDec {
     fn pretty_print(&self, i: usize) -> String {
-        let class_var_decs = self.class_var_dec
+        let class_var_decs = self
+            .class_var_dec
             .iter()
-            .map(|cvd| format!("{}\n",cvd.pretty_print(i)))
+            .map(|cvd| format!("{}\n", cvd.pretty_print(i)))
             .join("");
 
-        let subroutine_decs = self.subroutine_dec
+        let subroutine_decs = self
+            .subroutine_dec
             .iter()
             .map(|sd| sd.pretty_print(i))
             .join("\n");
 
-        format!("{}{}",class_var_decs, subroutine_decs)
+        format!("{}{}", class_var_decs, subroutine_decs)
     }
 }
 
@@ -39,39 +44,42 @@ impl PrettyPrint for SubroutineDec {
         let subroutine_type = self.subroutine_type.pretty_print(i);
         let subroutine_return_type = self.subroutine_return_type.pretty_print(i);
 
-        let parameter_list = self.parameter_list.clone()
-            .map_or(
-                String::new(),
-                |params: Vec<Parameter>| params
-                    .iter()
-                    .map(|p| p.pretty_print(i))
-                    .join(", "));
-        
-        let subroutine_body = self.subroutine_body.pretty_print(i+1);
+        let parameter_list = self
+            .parameter_list
+            .clone()
+            .map_or(String::new(), |params: Vec<Parameter>| {
+                params.iter().map(|p| p.pretty_print(i)).join(", ")
+            });
 
-        // removing this newline 
+        let subroutine_body = self.subroutine_body.pretty_print(i + 1);
+
+        // removing this newline
         // format!("{}{} {} {}({}) {{{}\n{}}}",
-        format!("{}{} {} {}({}) {{\n{}\n{}}}",
+        format!(
+            "{}{} {} {}({}) {{\n{}\n{}}}",
             tab(i),
             subroutine_type,
             subroutine_return_type,
             self.subroutine_name,
             parameter_list,
             subroutine_body,
-            tab(i))
+            tab(i)
+        )
     }
 }
 
 impl PrettyPrint for SubroutineBody {
     fn pretty_print(&self, i: usize) -> String {
-        let var_decs = self.var_decs
+        let var_decs = self
+            .var_decs
             .iter()
-            .map(|vd| format!("{}var {};\n",tab(i),vd.pretty_print(i)))
+            .map(|vd| format!("{}var {};\n", tab(i), vd.pretty_print(i)))
             .join("");
 
-        let statements = self.stmts
+        let statements = self
+            .stmts
             .iter()
-            .map(|stmt| format!("{}{}",tab(i),stmt.pretty_print(i)))
+            .map(|stmt| format!("{}{}", tab(i), stmt.pretty_print(i)))
             .join("\n");
 
         format!("{}{}", var_decs, statements)
@@ -80,40 +88,50 @@ impl PrettyPrint for SubroutineBody {
 impl PrettyPrint for Statement {
     fn pretty_print(&self, i: usize) -> String {
         match self {
-            Statement::DoStatement(sc) => format!("do {};",sc.pretty_print(i)),
-            Statement::LetStatement(s,oe,e) => {
-                let expr = oe.clone()
-                    .map_or(
-                        String::new(),
-                        |expr| format!("[{}]", expr.pretty_print(i)));
-                format!("let {}{} = {};",s,expr,e.pretty_print(i))
-            },
-            Statement::WhileStatement(e,s) => {
-                let stmts = s.iter()
-                    .map(|stmt| format!("{}{}",tab(i+1),stmt.pretty_print(i+1)))
-                    .join("\n");
-                format!("while ({}) {{\n{}\n{}}}",e.pretty_print(i),stmts,tab(i))
+            Statement::DoStatement(sc) => format!("do {};", sc.pretty_print(i)),
+            Statement::LetStatement(s, oe, e) => {
+                let expr = oe
+                    .clone()
+                    .map_or(String::new(), |expr| format!("[{}]", expr.pretty_print(i)));
+                format!("let {}{} = {};", s, expr, e.pretty_print(i))
             }
-            Statement::IfStatement(e,s,os) => {
-                let stmts = s.iter()
-                    .map(|s| format!("{}{}",tab(i+1),s.pretty_print(i+1)))
+            Statement::WhileStatement(e, s) => {
+                let stmts = s
+                    .iter()
+                    .map(|stmt| format!("{}{}", tab(i + 1), stmt.pretty_print(i + 1)))
+                    .join("\n");
+                format!("while ({}) {{\n{}\n{}}}", e.pretty_print(i), stmts, tab(i))
+            }
+            Statement::IfStatement(e, s, os) => {
+                let stmts = s
+                    .iter()
+                    .map(|s| format!("{}{}", tab(i + 1), s.pretty_print(i + 1)))
                     .join("\n");
 
-                let elsey = os.clone().map_or(
-                    String::new(),
-                    |stmts| format!(" else {{\n{}\n{}}}",stmts.iter()
-                        .map(|s| format!("{}{}",tab(i+1),s.pretty_print(i+1)))
-                        .join("\n"),tab(i))
-                );
+                let elsey = os.clone().map_or(String::new(), |stmts| {
+                    format!(
+                        " else {{\n{}\n{}}}",
+                        stmts
+                            .iter()
+                            .map(|s| format!("{}{}", tab(i + 1), s.pretty_print(i + 1)))
+                            .join("\n"),
+                        tab(i)
+                    )
+                });
 
-                format!("if ({}) {{\n{}\n{}}}{}",e.pretty_print(i),stmts, tab(i),elsey)
-            },
+                format!(
+                    "if ({}) {{\n{}\n{}}}{}",
+                    e.pretty_print(i),
+                    stmts,
+                    tab(i),
+                    elsey
+                )
+            }
             Statement::ReturnStatement(oe) => {
-                let expr = oe.clone()
-                    .map_or(
-                        String::new(),
-                        |expr| format!(" {}",expr.pretty_print(i)));
-                format!("return{};",expr)
+                let expr = oe
+                    .clone()
+                    .map_or(String::new(), |expr| format!(" {}", expr.pretty_print(i)));
+                format!("return{};", expr)
             }
         }
     }
@@ -122,28 +140,25 @@ impl PrettyPrint for Statement {
 impl PrettyPrint for SubroutineCall {
     fn pretty_print(&self, i: usize) -> String {
         match self {
-            SubroutineCall::ClassCall(s1,s2,es) => {
-                let exprs = es.iter()
-                    .map(|e| e.pretty_print(i))
-                    .join(", ");
-                format!("{}.{}({})",s1,s2,exprs)
-            },
-            SubroutineCall::Call(s,es) => {
-                let exprs = es.iter()
-                    .map(|e| e.pretty_print(i))
-                    .join(", ");
-                format!("{}({})",s,exprs)
-            },
+            SubroutineCall::ClassCall(s1, s2, es) => {
+                let exprs = es.iter().map(|e| e.pretty_print(i)).join(", ");
+                format!("{}.{}({})", s1, s2, exprs)
+            }
+            SubroutineCall::Call(s, es) => {
+                let exprs = es.iter().map(|e| e.pretty_print(i)).join(", ");
+                format!("{}({})", s, exprs)
+            }
         }
     }
 }
 
 impl PrettyPrint for Expression {
-    fn pretty_print(&self, i:usize) -> String {
+    fn pretty_print(&self, i: usize) -> String {
         let term = self.term.pretty_print(i);
-        let bin = self.bin
+        let bin = self
+            .bin
             .iter()
-            .map(|(b,t)| format!(" {} {}",b.pretty_print(i),t.pretty_print(i)))
+            .map(|(b, t)| format!(" {} {}", b.pretty_print(i), t.pretty_print(i)))
             .join("");
         format!("{}{}", term, bin)
     }
@@ -154,17 +169,16 @@ impl PrettyPrint for Term {
     fn pretty_print(&self, i: usize) -> String {
         match self {
             Term::IntegerConstant(i) => i.to_string(),
-            Term::StringConstant(s) => format!("\"{}\"",s),
+            Term::StringConstant(s) => format!("\"{}\"", s),
             Term::KeywordConstant(k) => k.pretty_print(i),
-            Term::ParensExpr(e) => format!("({})",e.pretty_print(i)),
+            Term::ParensExpr(e) => format!("({})", e.pretty_print(i)),
             Term::SubroutineCall(sc) => sc.pretty_print(i),
-            Term::UnaryTerm(uop,t) => format!("{}{}",uop.pretty_print(i),t.pretty_print(i)),
-            Term::VarName(s,oe) => {
-                let expr = oe.clone()
-                    .map_or(
-                        String::new(),
-                        |expr| format!("[{}]", expr.pretty_print(i)));
-                format!("{}{}",s,expr)
+            Term::UnaryTerm(uop, t) => format!("{}{}", uop.pretty_print(i), t.pretty_print(i)),
+            Term::VarName(s, oe) => {
+                let expr = oe
+                    .clone()
+                    .map_or(String::new(), |expr| format!("[{}]", expr.pretty_print(i)));
+                format!("{}{}", s, expr)
             }
         }
     }
@@ -209,12 +223,9 @@ impl PrettyPrint for BinaryOp {
 impl PrettyPrint for VarDec {
     fn pretty_print(&self, i: usize) -> String {
         let r#type = self.r#type.pretty_print(i);
-        let var_names = self.var_name
-            .iter()
-            .map(|vn| vn.to_string())
-            .join(", ");
+        let var_names = self.var_name.iter().map(|vn| vn.to_string()).join(", ");
 
-        format!("{} {}",r#type,var_names)
+        format!("{} {}", r#type, var_names)
     }
 }
 
@@ -229,7 +240,7 @@ impl PrettyPrint for SubroutineType {
 }
 
 impl PrettyPrint for SubroutineReturnType {
-    fn pretty_print(&self, i:usize) -> String {
+    fn pretty_print(&self, i: usize) -> String {
         match self {
             SubroutineReturnType::Void => "void".to_string(),
             SubroutineReturnType::Type(t) => t.pretty_print(i),
@@ -239,7 +250,11 @@ impl PrettyPrint for SubroutineReturnType {
 
 impl PrettyPrint for Parameter {
     fn pretty_print(&self, i: usize) -> String {
-        format!("{} {}",self.r#type.pretty_print(i),self.var_name.to_string())
+        format!(
+            "{} {}",
+            self.r#type.pretty_print(i),
+            self.var_name.to_string()
+        )
     }
 }
 
@@ -247,12 +262,9 @@ impl PrettyPrint for ClassVarDec {
     fn pretty_print(&self, i: usize) -> String {
         let class_var_type = self.class_var_type.pretty_print(i);
         let r#type = self.r#type.pretty_print(i);
-        let vars = self.vars
-            .iter()
-            .map(|v| v.to_string())
-            .join(", ");
+        let vars = self.vars.iter().map(|v| v.to_string()).join(", ");
 
-        format!("{}{} {} {};",tab(i),class_var_type,r#type,vars)
+        format!("{}{} {} {};", tab(i), class_var_type, r#type, vars)
     }
 }
 
@@ -275,6 +287,3 @@ impl PrettyPrint for Type {
         }
     }
 }
-
-
-

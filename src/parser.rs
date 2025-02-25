@@ -206,7 +206,9 @@ fn parse_let_statement() -> impl Parser<Token, Statement, Error = Simple<Token>>
         .then_ignore(sym(Symbol::Equal))
         .then(parse_expression())
         .then_ignore(sym(Symbol::Semicolon))
-        .map(|((var_name, option_expression), expression)| Statement::LetStatement(var_name, option_expression, expression))
+        .map(|((var_name, option_expression), expression)| {
+            Statement::LetStatement(var_name, option_expression, expression)
+        })
         .labelled("let statement")
 }
 
@@ -236,7 +238,7 @@ fn parse_if_statement<P: Parser<Token, Statement, Error = Simple<Token>> + Clone
                 )
                 .or_not(),
         )
-        .map(|((cond, then), else_opt)| Statement::IfStatement(cond,then,else_opt))
+        .map(|((cond, then), else_opt)| Statement::IfStatement(cond, then, else_opt))
         .labelled("if statement")
 }
 
@@ -256,7 +258,7 @@ fn parse_while_statement(
                 .ignore_then(statement.repeated())
                 .then_ignore(sym(Symbol::RCurly)),
         )
-        .map(|(e,s)| Statement::WhileStatement(e,s))
+        .map(|(e, s)| Statement::WhileStatement(e, s))
         .labelled("while statement")
 }
 
