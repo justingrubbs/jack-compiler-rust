@@ -22,15 +22,15 @@ impl PrettyPrint for ClassDec {
     fn pretty_print(&self, i: usize) -> String {
         let class_var_decs = self.class_var_dec
             .iter()
-            .map(|cvd| cvd.pretty_print(i))
-            .join("\n");
+            .map(|cvd| format!("{}\n",cvd.pretty_print(i)))
+            .join("");
 
         let subroutine_decs = self.subroutine_dec
             .iter()
             .map(|sd| sd.pretty_print(i))
             .join("\n");
 
-        format!("{}\n{}",class_var_decs, subroutine_decs)
+        format!("{}{}",class_var_decs, subroutine_decs)
     }
 }
 
@@ -66,15 +66,15 @@ impl PrettyPrint for SubroutineBody {
     fn pretty_print(&self, i: usize) -> String {
         let var_decs = self.var_decs
             .iter()
-            .map(|vd| format!("{}var {};",tab(i),vd.pretty_print(i)))
-            .join("\n");
+            .map(|vd| format!("{}var {};\n",tab(i),vd.pretty_print(i)))
+            .join("");
 
         let statements = self.stmts
             .iter()
             .map(|stmt| format!("{}{}",tab(i),stmt.pretty_print(i)))
             .join("\n");
 
-        format!("{}\n{}", var_decs, statements)
+        format!("{}{}", var_decs, statements)
     }
 }
 impl PrettyPrint for Statement {

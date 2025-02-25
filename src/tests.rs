@@ -145,4 +145,9 @@ mod tests {
     fn test_parser_square_square() {
         test_parser("tests/parser/Square/Square")
     }
+
+    #[test]
+    fn test_parser_square_squaregame() {
+        test_parser("tests/parser/Square/SquareGame")
+    }
 }

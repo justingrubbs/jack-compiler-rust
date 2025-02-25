@@ -1,12 +1,14 @@
 class Main {
     static boolean test;
-    function void main() {        var SquareGame game;
+    function void main() {
+        var SquareGame game;
         let game = SquareGame.new();
         do game.run();
         do game.dispose();
         return;
     }
-    function void more() {        var int i, j;
+    function void more() {
+        var int i, j;
         var String s;
         var Array a;
         if (false) {
