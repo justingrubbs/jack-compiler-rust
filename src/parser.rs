@@ -290,18 +290,20 @@ fn parse_return_statement() -> impl Parser<Token, ReturnStatement, Error = Simpl
 // Expressions:
 
 
-
-
 // neede fixing
 // parse_expression:
 //  [term] ([binary_op] [term])*
 pub fn parse_expression() -> impl Parser<Token, Expression, Error = Simple<Token>> {
-    parse_term()
+    recursive(|expr| {
+        parse_unary_op().or_not()
+        .then(parse_term())
         .then(
             parse_binary_op()
-            .then(parse_term()).repeated()
-        )
-        .map(|(expr,bin)| Expression { expr, bin })
+            .then(parse_term()
+            ).repeated()
+        ).map(|((unary,term),bin)| Expression { unary, term, bin })
+        .labelled("expression")
+    }).boxed()
 }
 
 // parse_binary_op:
@@ -333,31 +335,26 @@ fn parse_unary_op() -> impl Parser<Token, UnaryOp, Error = Simple<Token>> {
 //  [integer_constant] | [string_constant] | [keyword_constant] | [var_name] ('[' [expression] ']')?
 //  | '(' [expression] ')' | ([unary_op] [term]) | [subroutine_call]
 pub fn parse_term() -> impl Parser<Token, Term, Error = Simple<Token>> {
-    recursive(|term| {
-        choice((
-            int_const().map(Term::IntegerConstant),
-            string_const().map(Term::StringConstant),
-            parse_keyword_constant().map(Term::KeywordConstant),
-            parse_subroutine_call().map(Term::SubroutineCall)
-            .or(
-                ident()
-                    .then(
-                        (sym(Symbol::LBracket)
-                            .ignore_then(parse_expression().map(Box::new))
-                            .then_ignore(sym(Symbol::RBracket)))
-                        .or_not(),
-                    )
-                    .map(|(s, oe)| Term::VarName(s, oe))),
-            sym(Symbol::LParens)
-                .ignore_then(parse_expression().map(Box::new))
-                .then_ignore(sym(Symbol::RParens))
-                .map(Term::Expression),
-            parse_unary_op()
-                .then(term)
-                .map(|(uop, t)| Term::UnaryTerm(uop, Box::new(t))),
-        ))
-        .labelled("term")
-    })
+    choice((
+        int_const().map(Term::IntegerConstant),
+        string_const().map(Term::StringConstant),
+        parse_keyword_constant().map(Term::KeywordConstant),
+        parse_subroutine_call().map(Term::SubroutineCall)
+        .or(
+            ident()
+                .then(
+                    (sym(Symbol::LBracket)
+                        .ignore_then(parse_expression().map(Box::new))
+                        .then_ignore(sym(Symbol::RBracket)))
+                    .or_not(),
+                )
+                .map(|(s, oe)| Term::VarName(s, oe))),
+        sym(Symbol::LParens)
+            .ignore_then(parse_expression().map(Box::new))
+            .then_ignore(sym(Symbol::RParens))
+            .map(Term::Expression),
+    ))
+    .labelled("term")
 }
 
 // parse_keyword_constant:
@@ -393,8 +390,8 @@ fn parse_subroutine_call() -> impl Parser<Token, SubroutineCall, Error = Simple<
 
 // parse_expression_list:
 //  ([expression] (',' [expression]) *)?
-fn parse_expression_list() -> impl Parser<Token, Vec<Expression>, Error = Simple<Token>> {
-    parse_expression()
+fn parse_expression_list() -> impl Parser<Token, Vec<Box<Expression>>, Error = Simple<Token>> {
+    parse_expression().map(Box::new)
         .separated_by(sym(Symbol::Comma))
         .labelled("expression list")
 }
