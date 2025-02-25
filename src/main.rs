@@ -5,9 +5,10 @@ mod ast {
 }
 mod lexer;
 mod parser;
+mod pretty_printer;
 mod tests;
 
-use parser::PrettyPrint;
+use pretty_printer::PrettyPrint;
 use std::env;
 use std::fs;
 use std::io::{self, Error};

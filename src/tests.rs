@@ -8,7 +8,7 @@ use std::process::Command;
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::PrettyPrint;
+    use crate::pretty_printer::PrettyPrint;
 
     fn compare_files(actual: &std::path::Path, expected: &std::path::Path) -> bool {
         let actual_content = std::fs::read_to_string(actual).unwrap();
