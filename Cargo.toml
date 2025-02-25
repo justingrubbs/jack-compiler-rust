@@ -5,4 +5,5 @@ edition = "2021"
 
 [dependencies]
 chumsky = "0.7"
+itertools = "0.10.5"
 

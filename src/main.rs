@@ -7,6 +7,7 @@ mod lexer;
 mod parser;
 mod tests;
 
+use parser::PrettyPrint;
 use std::env;
 use std::fs;
 use std::io::{self, Error};
@@ -24,8 +25,8 @@ fn main() -> Result<(), Error> {
 
     if metadata.is_file() {
         let class = parse_jack_file(path)?;
-        let class_string = crate::parser::print_class(class);
-        let output_path = format!("{}T.xml", path.trim_end_matches(".jack"));
+        let class_string = class.pretty_print(0);
+        let output_path = format!("{}T.jack", path.trim_end_matches(".jack"));
 
         fs::write(output_path, class_string)?;
     }

@@ -2,6 +2,8 @@ use crate::ast::jack::*;
 use crate::lexer::*;
 use chumsky::prelude::*;
 
+use itertools::Itertools;
+
 // Token helper functions:
 fn kw(expected: Keyword) -> impl Parser<Token, (), Error = Simple<Token>> {
     just(Token::Keyword(expected)).ignored()
@@ -180,11 +182,11 @@ fn parse_var_dec() -> impl Parser<Token, VarDec, Error = Simple<Token>> {
 fn parse_statement() -> impl Parser<Token, Statement, Error = Simple<Token>> {
     recursive(|statement| {
         choice((
-            parse_let_statement().map(Statement::LetStatement),
-            parse_if_statement(statement.clone()).map(Statement::IfStatement),
-            parse_while_statement(statement).map(Statement::WhileStatement),
-            parse_do_statement().map(Statement::DoStatement),
-            parse_return_statement().map(Statement::ReturnStatement),
+            parse_let_statement(),
+            parse_if_statement(statement.clone()),
+            parse_while_statement(statement),
+            parse_do_statement(),
+            parse_return_statement(),
         ))
         .labelled("statement")
     })
@@ -192,7 +194,7 @@ fn parse_statement() -> impl Parser<Token, Statement, Error = Simple<Token>> {
 
 // parse_let_statement:
 //  'let' [var_name] ('[' [expression] ']')? '=' [expression] ';'
-fn parse_let_statement() -> impl Parser<Token, LetStatement, Error = Simple<Token>> {
+fn parse_let_statement() -> impl Parser<Token, Statement, Error = Simple<Token>> {
     kw(Keyword::Let)
         .ignore_then(ident())
         .then(
@@ -204,11 +206,7 @@ fn parse_let_statement() -> impl Parser<Token, LetStatement, Error = Simple<Toke
         .then_ignore(sym(Symbol::Equal))
         .then(parse_expression())
         .then_ignore(sym(Symbol::Semicolon))
-        .map(|((var_name, option_expression), expression)| LetStatement {
-            var_name,
-            option_expression,
-            expression,
-        })
+        .map(|((var_name, option_expression), expression)| Statement::LetStatement(var_name, option_expression, expression))
         .labelled("let statement")
 }
 
@@ -216,7 +214,7 @@ fn parse_let_statement() -> impl Parser<Token, LetStatement, Error = Simple<Toke
 //  'if' '(' [expression] ')' '{' [statement]* '}' ('else' '{' [statement]* '}')?
 fn parse_if_statement<P: Parser<Token, Statement, Error = Simple<Token>> + Clone>(
     statement: P,
-) -> impl Parser<Token, IfStatement, Error = Simple<Token>> {
+) -> impl Parser<Token, Statement, Error = Simple<Token>> {
     kw(Keyword::If)
         .ignore_then(
             sym(Symbol::LParens)
@@ -238,11 +236,7 @@ fn parse_if_statement<P: Parser<Token, Statement, Error = Simple<Token>> + Clone
                 )
                 .or_not(),
         )
-        .map(|((cond, then), else_opt)| IfStatement {
-            r#if: cond,
-            then,
-            r#else: else_opt,
-        })
+        .map(|((cond, then), else_opt)| Statement::IfStatement(cond,then,else_opt))
         .labelled("if statement")
 }
 
@@ -250,7 +244,7 @@ fn parse_if_statement<P: Parser<Token, Statement, Error = Simple<Token>> + Clone
 //  'while' '(' [expression] ')' '{' [statement]* '}'
 fn parse_while_statement(
     statement: impl Parser<Token, Statement, Error = Simple<Token>>,
-) -> impl Parser<Token, WhileStatement, Error = Simple<Token>> {
+) -> impl Parser<Token, Statement, Error = Simple<Token>> {
     kw(Keyword::While)
         .ignore_then(
             sym(Symbol::LParens)
@@ -262,28 +256,27 @@ fn parse_while_statement(
                 .ignore_then(statement.repeated())
                 .then_ignore(sym(Symbol::RCurly)),
         )
-        .map(|(case, body)| WhileStatement { case, body })
+        .map(|(e,s)| Statement::WhileStatement(e,s))
         .labelled("while statement")
 }
 
 // parse_do_statement:
 //  'do' [subroutine_call] ';'
-fn parse_do_statement() -> impl Parser<Token, DoStatement, Error = Simple<Token>> {
+fn parse_do_statement() -> impl Parser<Token, Statement, Error = Simple<Token>> {
     kw(Keyword::Do)
         .ignore_then(parse_subroutine_call())
         .then_ignore(sym(Symbol::Semicolon))
-        .map(|call| DoStatement { call })
+        .map(Statement::DoStatement)
         .labelled("do statement")
 }
 
 // parse_return_statement:
 //  'return' [expression]? ';'
-fn parse_return_statement() -> impl Parser<Token, ReturnStatement, Error = Simple<Token>> {
+fn parse_return_statement() -> impl Parser<Token, Statement, Error = Simple<Token>> {
     kw(Keyword::Return)
-        .ignore_then(parse_expression())
-        .or_not()
+        .ignore_then(parse_expression().or_not())
         .then_ignore(sym(Symbol::Semicolon))
-        .map(|r#return| ReturnStatement { r#return })
+        .map(Statement::ReturnStatement)
         .labelled("return statement")
 }
 
@@ -455,33 +448,184 @@ fn parse_type() -> impl Parser<Token, Type, Error = Simple<Token>> {
     .labelled("type")
 }
 
-// Printing class:
-pub fn print_class(class: Class) -> String {
-    format!("{}", class.as_str())
+// Pretty-printing:
+fn tab(i: usize) -> String {
+    "\t".repeat(i)
 }
 
-fn tab_length(i: i16) -> String {
-    "/t".repeat(i as usize)
+pub trait PrettyPrint {
+    fn pretty_print(&self, i: usize) -> String;
 }
 
-impl Class {
-    fn as_str(&self) -> String {
-        let mut class_str = format!("<class>\n");
-        class_str.push_str(&format!("\t<keyword> class </keyword>\n"));
-        class_str.push_str(&format!(
-            "\t<identifier> {} </identifier>\n",
-            self.class_name
-        ));
-
-        // Assuming class_dec has its own as_str method.
-        class_str.push_str(&self.class_dec.as_str(1)); // Call to as_str() for ClassDec.
-        class_str.push_str("</class>");
-        class_str
+impl PrettyPrint for Class {
+    fn pretty_print(&self, i: usize) -> String {
+        format!("class {} {{\n{}\n}}\n",self.class_name,self.class_dec.pretty_print(i+1))
     }
 }
 
-impl ClassDec {
-    fn as_str(&self, indent: i16) -> String {
-        "test".to_string()
+impl PrettyPrint for ClassDec {
+    fn pretty_print(&self, i: usize) -> String {
+        let class_var_decs = self.class_var_dec
+            .iter()
+            .map(|cvd| cvd.pretty_print(i))
+            .join("\n");
+
+        let subroutine_decs = self.subroutine_dec
+            .iter()
+            .map(|sd| sd.pretty_print(i))
+            .join("\n");
+
+        format!("{}\n{}",class_var_decs, subroutine_decs)
     }
 }
+
+impl PrettyPrint for SubroutineDec {
+    fn pretty_print(&self, i: usize) -> String {
+        let subroutine_type = self.subroutine_type.pretty_print(i);
+        let subroutine_return_type = self.subroutine_return_type.pretty_print(i);
+
+        let parameter_list = self.parameter_list.clone()
+            .map_or(
+                String::new(),
+                |params: Vec<Parameter>| params
+                    .iter()
+                    .map(|p| p.pretty_print(i))
+                    .join(", "));
+        
+        let subroutine_body = self.subroutine_body.pretty_print(i+1);
+
+        format!("{}{} {} {}({}) {{\n{}\n{}}}",
+            tab(i),
+            subroutine_type,
+            subroutine_return_type,
+            self.subroutine_name,
+            parameter_list,
+            subroutine_body,
+            tab(i))
+    }
+}
+
+impl PrettyPrint for SubroutineBody {
+    fn pretty_print(&self, i: usize) -> String {
+        let var_decs = self.var_decs
+            .iter()
+            .map(|vd| format!("{}var {};",tab(i),vd.pretty_print(i)))
+            .join("\n");
+
+        let statements = self.stmts
+            .iter()
+            .map(|stmt| format!("{}{}",tab(i),stmt.pretty_print(i)))
+            .join("\n");
+
+        format!("{}\n{}", var_decs, statements)
+    }
+}
+impl PrettyPrint for Statement {
+    fn pretty_print(&self, i: usize) -> String {
+        match self {
+            Statement::DoStatement(sc) => format!("do {};",sc.pretty_print(i)),
+            Statement::LetStatement(s,oe,e) => todo!(),
+            Statement::WhileStatement(e,s) => todo!(),
+            Statement::IfStatement(e,s,os) => todo!(),
+            Statement::ReturnStatement(oe) => todo!(),
+        }
+    }
+}
+
+impl PrettyPrint for SubroutineCall {
+    fn pretty_print(&self, i: usize) -> String {
+        match self {
+            SubroutineCall::ClassCall(s1,s2,es) => {
+                let exprs = es.iter()
+                    .map(|e| e.pretty_print(i))
+                    .join(", ");
+                format!("{}.{}({})",s1,s2,exprs)
+            },
+            SubroutineCall::Call(s,es) => {
+                let exprs = es.iter()
+                    .map(|e| e.pretty_print(i))
+                    .join(", ");
+                format!("{}({})",s,exprs)
+            },
+        }
+    }
+}
+
+impl PrettyPrint for Expression {
+    fn pretty_print(&self, i:usize) -> String {
+        "expr".to_string()
+    }
+}
+
+impl PrettyPrint for VarDec {
+    fn pretty_print(&self, i: usize) -> String {
+        let r#type = self.r#type.pretty_print(i);
+        let var_names = self.var_name
+            .iter()
+            .map(|vn| vn.to_string())
+            .join(", ");
+
+        format!("{} {}",r#type,var_names)
+    }
+}
+
+impl PrettyPrint for SubroutineType {
+    fn pretty_print(&self, i: usize) -> String {
+        match self {
+            SubroutineType::Constructor => "constructor".to_string(),
+            SubroutineType::Function => "function".to_string(),
+            SubroutineType::Method => "method".to_string(),
+        }
+    }
+}
+
+impl PrettyPrint for SubroutineReturnType {
+    fn pretty_print(&self, i:usize) -> String {
+        match self {
+            SubroutineReturnType::Void => "void".to_string(),
+            SubroutineReturnType::Type(t) => t.pretty_print(i),
+        }
+    }
+}
+
+impl PrettyPrint for Parameter {
+    fn pretty_print(&self, i: usize) -> String {
+        format!("{} {}",self.r#type.pretty_print(i),self.var_name.to_string())
+    }
+}
+
+impl PrettyPrint for ClassVarDec {
+    fn pretty_print(&self, i: usize) -> String {
+        let class_var_type = self.class_var_type.pretty_print(i);
+        let r#type = self.r#type.pretty_print(i);
+        let vars = self.vars
+            .iter()
+            .map(|v| v.to_string())
+            .join(", ");
+
+        format!("{}{} {} {};",tab(i),class_var_type,r#type,vars)
+    }
+}
+
+impl PrettyPrint for ClassVarType {
+    fn pretty_print(&self, i: usize) -> String {
+        match self {
+            ClassVarType::Static => "static".to_string(),
+            ClassVarType::Field => "field".to_string(),
+        }
+    }
+}
+
+impl PrettyPrint for Type {
+    fn pretty_print(&self, i: usize) -> String {
+        match self {
+            Type::Int => "int".to_string(),
+            Type::Char => "char".to_string(),
+            Type::Boolean => "boolean".to_string(),
+            Type::ClassName(s) => s.to_string(),
+        }
+    }
+}
+
+
+

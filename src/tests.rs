@@ -8,6 +8,7 @@ use std::process::Command;
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::PrettyPrint;
 
     fn compare_files(actual: &std::path::Path, expected: &std::path::Path) -> bool {
         let actual_content = std::fs::read_to_string(actual).unwrap();
@@ -106,13 +107,13 @@ mod tests {
     // Parser tests:
     fn test_parser(file: &str) {
         let jack_path: String = format!("{}.jack", file);
-        let exp_path: String = format!("{}.xml", file);
-        let act_path: String = format!("{}T.xml", file);
+        let exp_path: String = format!("{}.jack", file);
+        let act_path: String = format!("{}T.jack", file);
 
         let r_class = crate::parse_jack_file(&jack_path);
         match r_class {
             Ok(class) => {
-                let class_string = crate::parser::print_class(class);
+                let class_string = class.pretty_print(0);
                 std::fs::write(act_path.clone(), class_string);
                 let actual = std::path::Path::new(&act_path);
                 let expected = std::path::Path::new(&exp_path);
@@ -130,8 +131,8 @@ mod tests {
         }
     }
 
-    // #[test]
-    // fn test_parser_arraytest_main() {
-    //     test_parser("tests/parser/ArrayTest/Main");
-    // }
+    #[test]
+    fn test_parser_square_main() {
+        test_parser("tests/parser/Square/Test");
+    }
 }

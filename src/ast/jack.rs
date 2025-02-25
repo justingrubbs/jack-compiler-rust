@@ -77,41 +77,11 @@ pub struct VarDec {
 // Statements:
 #[derive(Debug, Clone)]
 pub enum Statement {
-    LetStatement(LetStatement),
-    IfStatement(IfStatement),
-    WhileStatement(WhileStatement),
-    DoStatement(DoStatement),
-    ReturnStatement(ReturnStatement),
-}
-
-#[derive(Debug, Clone)]
-pub struct LetStatement {
-    pub var_name: String,
-    pub option_expression: Option<Expression>,
-    pub expression: Expression,
-}
-
-#[derive(Debug, Clone)]
-pub struct IfStatement {
-    pub r#if: Expression,
-    pub then: Vec<Statement>,
-    pub r#else: Option<Vec<Statement>>,
-}
-
-#[derive(Debug, Clone)]
-pub struct WhileStatement {
-    pub case: Expression,
-    pub body: Vec<Statement>,
-}
-
-#[derive(Debug, Clone)]
-pub struct DoStatement {
-    pub call: SubroutineCall,
-}
-
-#[derive(Debug, Clone)]
-pub struct ReturnStatement {
-    pub r#return: Option<Expression>,
+    LetStatement(String, Option<Expression>, Expression),
+    IfStatement(Expression,Vec<Statement>,Option<Vec<Statement>>),
+    WhileStatement(Expression,Vec<Statement>),
+    DoStatement(SubroutineCall),
+    ReturnStatement(Option<Expression>),
 }
 
 // Expressions:

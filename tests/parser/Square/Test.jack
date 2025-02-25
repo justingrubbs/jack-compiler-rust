@@ -1,0 +1,8 @@
+class Main {
+    static boolean test;
+    function void main() {
+        var SquareGame game;
+        do game.run();
+        do game.dispose();
+    }
+}
