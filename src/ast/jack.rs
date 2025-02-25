@@ -117,9 +117,8 @@ pub struct ReturnStatement {
 // Expressions:
 #[derive(Debug, Clone)]
 pub struct Expression {
-    pub unary: Option<UnaryOp>,
-    pub term: Term,
-    pub bin: Vec<(BinaryOp, Term)>,
+    pub term: Box<Term>,
+    pub bin: Vec<(BinaryOp, Box<Term>)>,
 }
 
 #[derive(Debug, Clone)]
@@ -128,6 +127,7 @@ pub enum Term {
     StringConstant(String),
     KeywordConstant(KeywordConstant),
     VarName(String, Option<Box<Expression>>),
+    UnaryTerm(UnaryOp, Box<Term>),
     Expression(Box<Expression>),
     SubroutineCall(SubroutineCall),
 }

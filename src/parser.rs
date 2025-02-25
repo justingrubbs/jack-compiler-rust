@@ -289,21 +289,121 @@ fn parse_return_statement() -> impl Parser<Token, ReturnStatement, Error = Simpl
 
 // Expressions:
 
-
 // neede fixing
 // parse_expression:
 //  [term] ([binary_op] [term])*
 pub fn parse_expression() -> impl Parser<Token, Expression, Error = Simple<Token>> {
     recursive(|expr| {
-        parse_unary_op().or_not()
-        .then(parse_term())
-        .then(
-            parse_binary_op()
-            .then(parse_term()
-            ).repeated()
-        ).map(|((unary,term),bin)| Expression { unary, term, bin })
-        .labelled("expression")
-    }).boxed()
+        parse_term(expr.clone())
+            .map(Box::new)
+            .then(
+                parse_binary_op()
+                    .then(parse_term(expr).map(Box::new))
+                    .repeated(),
+            )
+            .map(|(term, bin)| Expression { term, bin })
+            .labelled("expression")
+    })
+    .boxed()
+}
+
+// parse_term:
+//  [integer_constant] | [string_constant] | [keyword_constant] | [var_name] ('[' [expression] ']')?
+//  | '(' [expression] ')' | ([unary_op] [term]) | [subroutine_call]
+pub fn parse_term<'a>(
+    expr: Recursive<'a, Token, Expression, Simple<Token>>,
+) -> impl Parser<Token, Term, Error = Simple<Token>> + 'a {
+    recursive(|term| {
+        let int_const = int_const().map(Term::IntegerConstant);
+        let string_const = string_const().map(Term::StringConstant);
+        let keyword_const = parse_keyword_constant().map(Term::KeywordConstant);
+        let unary_term = parse_unary_op()
+            .then(Box::new(term))
+            .map(|(u, t)| Term::UnaryTerm(u, Box::new(t)));
+        let parens_expr = sym(Symbol::LParens)
+            .ignore_then(expr.clone().map(Box::new))
+            .then_ignore(sym(Symbol::RParens))
+            .map(Term::Expression);
+        // let subroutine_call = ident()
+        //     .then_ignore(sym(Symbol::Period))
+        //     .then(ident())
+        //     .then_ignore(sym(Symbol::LParens))
+        //     .then(expr.clone().map(Box::new).separated_by(sym(Symbol::Comma)))
+        //     .then_ignore(sym(Symbol::RParens))
+        //     .map(|((c, s), es)| Term::SubroutineCall(SubroutineCall::ClassCall(c, s, es)))
+        //     .or(ident()
+        //         .then_ignore(sym(Symbol::LParens))
+        //         .then(expr.clone().map(Box::new).separated_by(sym(Symbol::Comma)))
+        //         .then_ignore(sym(Symbol::RParens))
+        //         .map(|(s, es)| Term::SubroutineCall(SubroutineCall::Call(s, es))));
+        // let var_name = ident()
+        //     .then(
+        //         (sym(Symbol::LBracket)
+        //             .ignore_then(expr.map(Box::new))
+        //             .then_ignore(sym(Symbol::RBracket)))
+        //         .or_not(),
+        //     )
+        //     .map(|(s, oe)| Term::VarName(s, oe));
+
+        let var_or_subroutine = ident()
+            .then_ignore(sym(Symbol::Period))
+            .then(ident())
+            .then_ignore(sym(Symbol::LParens))
+            .then(expr.clone().map(Box::new).separated_by(sym(Symbol::Comma)))
+            .then_ignore(sym(Symbol::RParens))
+            .map(|((c, s), es)| Term::SubroutineCall(SubroutineCall::ClassCall(c, s, es)))
+            .or(ident()
+                .then_ignore(sym(Symbol::LParens))
+                .then(expr.clone().map(Box::new).separated_by(sym(Symbol::Comma)))
+                .then_ignore(sym(Symbol::RParens))
+                .map(|(s, es)| Term::SubroutineCall(SubroutineCall::Call(s, es))))
+            .or(ident()
+                .then(
+                    (sym(Symbol::LBracket)
+                        .ignore_then(expr.map(Box::new))
+                        .then_ignore(sym(Symbol::RBracket)))
+                    .or_not(),
+                )
+                .map(|(s, oe)| Term::VarName(s, oe)));
+
+        choice((
+            unary_term,
+            int_const,
+            string_const,
+            keyword_const,
+            parens_expr,
+            var_or_subroutine,
+        ))
+        .labelled("term")
+    })
+}
+
+// parse_subroutine_call:
+//  ([var_name] | [class_name]) '.' [subroutine_name] '(' [expression_list] ')'
+//  | [subroutine_name] '(' [expression_list] ')'
+fn parse_subroutine_call() -> impl Parser<Token, SubroutineCall, Error = Simple<Token>> {
+    ident()
+        .then_ignore(sym(Symbol::Period))
+        .then(ident())
+        .then_ignore(sym(Symbol::LParens))
+        .then(parse_expression_list())
+        .then_ignore(sym(Symbol::RParens))
+        .map(|((c, s), es)| SubroutineCall::ClassCall(c, s, es))
+        .or(ident()
+            .then_ignore(sym(Symbol::LParens))
+            .then(parse_expression_list())
+            .then_ignore(sym(Symbol::RParens))
+            .map(|(s, es)| SubroutineCall::Call(s, es)))
+        .labelled("subroutine call")
+}
+
+// parse_expression_list:
+//  ([expression] (',' [expression]) *)?
+fn parse_expression_list() -> impl Parser<Token, Vec<Box<Expression>>, Error = Simple<Token>> {
+    parse_expression()
+        .map(Box::new)
+        .separated_by(sym(Symbol::Comma))
+        .labelled("expression list")
 }
 
 // parse_binary_op:
@@ -331,32 +431,6 @@ fn parse_unary_op() -> impl Parser<Token, UnaryOp, Error = Simple<Token>> {
     ))
 }
 
-// parse_term:
-//  [integer_constant] | [string_constant] | [keyword_constant] | [var_name] ('[' [expression] ']')?
-//  | '(' [expression] ')' | ([unary_op] [term]) | [subroutine_call]
-pub fn parse_term() -> impl Parser<Token, Term, Error = Simple<Token>> {
-    choice((
-        int_const().map(Term::IntegerConstant),
-        string_const().map(Term::StringConstant),
-        parse_keyword_constant().map(Term::KeywordConstant),
-        parse_subroutine_call().map(Term::SubroutineCall)
-        .or(
-            ident()
-                .then(
-                    (sym(Symbol::LBracket)
-                        .ignore_then(parse_expression().map(Box::new))
-                        .then_ignore(sym(Symbol::RBracket)))
-                    .or_not(),
-                )
-                .map(|(s, oe)| Term::VarName(s, oe))),
-        sym(Symbol::LParens)
-            .ignore_then(parse_expression().map(Box::new))
-            .then_ignore(sym(Symbol::RParens))
-            .map(Term::Expression),
-    ))
-    .labelled("term")
-}
-
 // parse_keyword_constant:
 //  'true' | 'false' | 'null' | 'this'
 fn parse_keyword_constant() -> impl Parser<Token, KeywordConstant, Error = Simple<Token>> {
@@ -367,33 +441,6 @@ fn parse_keyword_constant() -> impl Parser<Token, KeywordConstant, Error = Simpl
         kw(Keyword::This).to(KeywordConstant::This),
     ))
     .labelled("keyword constant")
-}
-
-// parse_subroutine_call:
-//  ([var_name] | [class_name]) '.' [subroutine_name] '(' [expression_list] ')'
-//  | [subroutine_name] '(' [expression_list] ')'
-fn parse_subroutine_call() -> impl Parser<Token, SubroutineCall, Error = Simple<Token>> {
-    ident()
-        .then_ignore(sym(Symbol::Period))
-        .then(ident())
-        .then_ignore(sym(Symbol::LParens))
-        .then(parse_expression_list())
-        .then_ignore(sym(Symbol::RParens))
-        .map(|((c, s), es)| SubroutineCall::ClassCall(c, s, es))
-        .or(ident()
-            .then_ignore(sym(Symbol::LParens))
-            .then(parse_expression_list())
-            .then_ignore(sym(Symbol::RParens))
-            .map(|(s, es)| SubroutineCall::Call(s, es)))
-        .labelled("subroutine call")
-}
-
-// parse_expression_list:
-//  ([expression] (',' [expression]) *)?
-fn parse_expression_list() -> impl Parser<Token, Vec<Box<Expression>>, Error = Simple<Token>> {
-    parse_expression().map(Box::new)
-        .separated_by(sym(Symbol::Comma))
-        .labelled("expression list")
 }
 
 // parse_type:
@@ -408,10 +455,9 @@ fn parse_type() -> impl Parser<Token, Type, Error = Simple<Token>> {
     .labelled("type")
 }
 
-
 // Printing class:
 pub fn print_class(class: Class) -> String {
-    format!("{}",class.as_str())
+    format!("{}", class.as_str())
 }
 
 fn tab_length(i: i16) -> String {
@@ -422,7 +468,10 @@ impl Class {
     fn as_str(&self) -> String {
         let mut class_str = format!("<class>\n");
         class_str.push_str(&format!("\t<keyword> class </keyword>\n"));
-        class_str.push_str(&format!("\t<identifier> {} </identifier>\n", self.class_name));
+        class_str.push_str(&format!(
+            "\t<identifier> {} </identifier>\n",
+            self.class_name
+        ));
 
         // Assuming class_dec has its own as_str method.
         class_str.push_str(&self.class_dec.as_str(1)); // Call to as_str() for ClassDec.
@@ -436,4 +485,3 @@ impl ClassDec {
         "test".to_string()
     }
 }
-

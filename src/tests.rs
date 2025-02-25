@@ -76,7 +76,7 @@ mod tests {
             Err(e) => {
                 eprintln!("Error tokenizing {}: {:?}", jack_path, e);
                 panic!("Failed to tokenize Jack file: {}", jack_path);
-            },
+            }
         }
     }
 
@@ -113,18 +113,20 @@ mod tests {
         match r_class {
             Ok(class) => {
                 let class_string = crate::parser::print_class(class);
-                std::fs::write(
-                    act_path.clone(),
-                    class_string
-                );
+                std::fs::write(act_path.clone(), class_string);
                 let actual = std::path::Path::new(&act_path);
                 let expected = std::path::Path::new(&exp_path);
-                assert!(compare_files(actual,expected), "{} and {} do not match", act_path, exp_path)
-            },
+                assert!(
+                    compare_files(actual, expected),
+                    "{} and {} do not match",
+                    act_path,
+                    exp_path
+                )
+            }
             Err(e) => {
                 eprintln!("Error parsing {}: {:?}", jack_path, e);
                 panic!("Failed to parse Jack file: {}", jack_path);
-            },
+            }
         }
     }
 
@@ -132,5 +134,4 @@ mod tests {
     // fn test_parser_arraytest_main() {
     //     test_parser("tests/parser/ArrayTest/Main");
     // }
-    
 }

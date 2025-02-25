@@ -23,15 +23,11 @@ fn main() -> Result<(), Error> {
     let metadata = fs::metadata(path)?;
 
     if metadata.is_file() {
-
         let class = parse_jack_file(path)?;
         let class_string = crate::parser::print_class(class);
         let output_path = format!("{}T.xml", path.trim_end_matches(".jack"));
 
-        fs::write(
-            output_path,
-            class_string,
-        )?;
+        fs::write(output_path, class_string)?;
     }
     // else if metadata.is_dir() {
     //     // If it's a directory, parse all .jack files
