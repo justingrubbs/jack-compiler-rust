@@ -107,8 +107,8 @@ mod tests {
     // Parser tests:
     fn test_parser(file: &str) {
         let jack_path: String = format!("{}.jack", file);
-        let exp_path: String = format!("{}.jack", file);
-        let act_path: String = format!("{}T.jack", file);
+        let exp_path: String = format!("{}Exp.jack", file);
+        let act_path: String = format!("{}Act.jack", file);
 
         let r_class = crate::parse_jack_file(&jack_path);
         match r_class {
