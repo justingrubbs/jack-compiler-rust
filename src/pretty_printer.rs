@@ -49,6 +49,8 @@ impl PrettyPrint for SubroutineDec {
         
         let subroutine_body = self.subroutine_body.pretty_print(i+1);
 
+        // removing this newline 
+        // format!("{}{} {} {}({}) {{{}\n{}}}",
         format!("{}{} {} {}({}) {{\n{}\n{}}}",
             tab(i),
             subroutine_type,
@@ -169,7 +171,7 @@ impl PrettyPrint for Term {
 }
 
 impl PrettyPrint for UnaryOp {
-    fn pretty_print(&self, i: usize) -> String {
+    fn pretty_print(&self, _: usize) -> String {
         match self {
             UnaryOp::Negation => "-".to_string(),
             UnaryOp::Tilde => "~".to_string(),
@@ -178,7 +180,7 @@ impl PrettyPrint for UnaryOp {
 }
 
 impl PrettyPrint for KeywordConstant {
-    fn pretty_print(&self, i: usize) -> String {
+    fn pretty_print(&self, _: usize) -> String {
         match self {
             KeywordConstant::True => "true".to_string(),
             KeywordConstant::False => "false".to_string(),
@@ -189,7 +191,7 @@ impl PrettyPrint for KeywordConstant {
 }
 
 impl PrettyPrint for BinaryOp {
-    fn pretty_print(&self, i: usize) -> String {
+    fn pretty_print(&self, _: usize) -> String {
         match self {
             BinaryOp::Plus => "+".to_string(),
             BinaryOp::Minus => "-".to_string(),
@@ -217,7 +219,7 @@ impl PrettyPrint for VarDec {
 }
 
 impl PrettyPrint for SubroutineType {
-    fn pretty_print(&self, i: usize) -> String {
+    fn pretty_print(&self, _: usize) -> String {
         match self {
             SubroutineType::Constructor => "constructor".to_string(),
             SubroutineType::Function => "function".to_string(),
@@ -255,7 +257,7 @@ impl PrettyPrint for ClassVarDec {
 }
 
 impl PrettyPrint for ClassVarType {
-    fn pretty_print(&self, i: usize) -> String {
+    fn pretty_print(&self, _: usize) -> String {
         match self {
             ClassVarType::Static => "static".to_string(),
             ClassVarType::Field => "field".to_string(),
@@ -264,7 +266,7 @@ impl PrettyPrint for ClassVarType {
 }
 
 impl PrettyPrint for Type {
-    fn pretty_print(&self, i: usize) -> String {
+    fn pretty_print(&self, _: usize) -> String {
         match self {
             Type::Int => "int".to_string(),
             Type::Char => "char".to_string(),

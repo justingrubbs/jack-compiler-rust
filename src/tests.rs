@@ -132,7 +132,17 @@ mod tests {
     }
 
     #[test]
-    fn test_parser_square_test() {
-        test_parser("tests/parser/Square/Test");
+    fn test_parser_arraytest_main() {
+        test_parser("tests/parser/ArrayTest/Main")
+    }
+
+    #[test]
+    fn test_parser_square_main() {
+        test_parser("tests/parser/Square/Main")
+    }
+
+    #[test]
+    fn test_parser_square_square() {
+        test_parser("tests/parser/Square/Square")
     }
 }

@@ -7,6 +7,7 @@ currently on stpe 3 and 4 in tandem
 
 
  - Make sure parsing errors are working
+ - organize the printer better !! !!! ! ! ! !!! !
 
 // For integration testing:
 //  - Generate a xml file with `T`, check it against normal xml file
