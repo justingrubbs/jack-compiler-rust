@@ -2,8 +2,6 @@ use crate::ast::jack::*;
 use crate::lexer::*;
 use chumsky::prelude::*;
 
-use itertools::Itertools;
-
 // Token helper functions:
 fn kw(expected: Keyword) -> impl Parser<Token, (), Error = Simple<Token>> {
     just(Token::Keyword(expected)).ignored()
@@ -319,26 +317,6 @@ pub fn parse_term<'a>(
             .ignore_then(expr.clone().map(Box::new))
             .then_ignore(sym(Symbol::RParens))
             .map(Term::ParensExpr);
-        // let subroutine_call = ident()
-        //     .then_ignore(sym(Symbol::Period))
-        //     .then(ident())
-        //     .then_ignore(sym(Symbol::LParens))
-        //     .then(expr.clone().map(Box::new).separated_by(sym(Symbol::Comma)))
-        //     .then_ignore(sym(Symbol::RParens))
-        //     .map(|((c, s), es)| Term::SubroutineCall(SubroutineCall::ClassCall(c, s, es)))
-        //     .or(ident()
-        //         .then_ignore(sym(Symbol::LParens))
-        //         .then(expr.clone().map(Box::new).separated_by(sym(Symbol::Comma)))
-        //         .then_ignore(sym(Symbol::RParens))
-        //         .map(|(s, es)| Term::SubroutineCall(SubroutineCall::Call(s, es))));
-        // let var_name = ident()
-        //     .then(
-        //         (sym(Symbol::LBracket)
-        //             .ignore_then(expr.map(Box::new))
-        //             .then_ignore(sym(Symbol::RBracket)))
-        //         .or_not(),
-        //     )
-        //     .map(|(s, oe)| Term::VarName(s, oe));
 
         let var_or_subroutine = ident()
             .then_ignore(sym(Symbol::Period))

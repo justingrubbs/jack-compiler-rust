@@ -1,5 +1,4 @@
 use chumsky::prelude::*;
-use std::fmt;
 
 // Figure 10.2 on page 194 of "The Elements of Computing Systems"
 

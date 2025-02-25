@@ -1,11 +1,3 @@
-use crate::ast::jack::*;
-use crate::lexer::*;
-use crate::parser::*;
-
-use std::fs;
-use std::path::Path;
-use std::process::Command;
-
 #[cfg(test)]
 mod tests {
     use crate::pretty_printer::PrettyPrint;
