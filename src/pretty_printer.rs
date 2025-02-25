@@ -5,7 +5,7 @@ use itertools::Itertools;
 
 // Pretty-printing:
 fn tab(i: usize) -> String {
-    "\t".repeat(i)
+    "    ".repeat(i)
 }
 
 pub trait PrettyPrint {
@@ -79,10 +79,40 @@ impl PrettyPrint for Statement {
     fn pretty_print(&self, i: usize) -> String {
         match self {
             Statement::DoStatement(sc) => format!("do {};",sc.pretty_print(i)),
-            Statement::LetStatement(s,oe,e) => todo!(),
-            Statement::WhileStatement(e,s) => todo!(),
-            Statement::IfStatement(e,s,os) => todo!(),
-            Statement::ReturnStatement(oe) => todo!(),
+            Statement::LetStatement(s,oe,e) => {
+                let expr = oe.clone()
+                    .map_or(
+                        String::new(),
+                        |expr| format!("[{}]", expr.pretty_print(i)));
+                format!("let {}{} = {};",s,expr,e.pretty_print(i))
+            },
+            Statement::WhileStatement(e,s) => {
+                let stmts = s.iter()
+                    .map(|stmt| format!("{}{}",tab(i+1),stmt.pretty_print(i+1)))
+                    .join("\n");
+                format!("while ({}) {{\n{}\n{}}}",e.pretty_print(i),stmts,tab(i))
+            }
+            Statement::IfStatement(e,s,os) => {
+                let stmts = s.iter()
+                    .map(|s| format!("{}{}",tab(i+1),s.pretty_print(i+1)))
+                    .join("\n");
+
+                let elsey = os.clone().map_or(
+                    String::new(),
+                    |stmts| format!(" else {{\n{}\n{}}}",stmts.iter()
+                        .map(|s| format!("{}{}",tab(i+1),s.pretty_print(i+1)))
+                        .join("\n"),tab(i))
+                );
+
+                format!("if ({}) {{\n{}\n{}}}{}",e.pretty_print(i),stmts, tab(i),elsey)
+            },
+            Statement::ReturnStatement(oe) => {
+                let expr = oe.clone()
+                    .map_or(
+                        String::new(),
+                        |expr| format!(" {}",expr.pretty_print(i)));
+                format!("return{};",expr)
+            }
         }
     }
 }
@@ -108,7 +138,69 @@ impl PrettyPrint for SubroutineCall {
 
 impl PrettyPrint for Expression {
     fn pretty_print(&self, i:usize) -> String {
-        "expr".to_string()
+        let term = self.term.pretty_print(i);
+        let bin = self.bin
+            .iter()
+            .map(|(b,t)| format!(" {} {}",b.pretty_print(i),t.pretty_print(i)))
+            .join("");
+        format!("{}{}", term, bin)
+    }
+}
+
+// FINISH
+impl PrettyPrint for Term {
+    fn pretty_print(&self, i: usize) -> String {
+        match self {
+            Term::IntegerConstant(i) => i.to_string(),
+            Term::StringConstant(s) => format!("\"{}\"",s),
+            Term::KeywordConstant(k) => k.pretty_print(i),
+            Term::ParensExpr(e) => format!("({})",e.pretty_print(i)),
+            Term::SubroutineCall(sc) => sc.pretty_print(i),
+            Term::UnaryTerm(uop,t) => format!("{}{}",uop.pretty_print(i),t.pretty_print(i)),
+            Term::VarName(s,oe) => {
+                let expr = oe.clone()
+                    .map_or(
+                        String::new(),
+                        |expr| format!("[{}]", expr.pretty_print(i)));
+                format!("{}{}",s,expr)
+            }
+        }
+    }
+}
+
+impl PrettyPrint for UnaryOp {
+    fn pretty_print(&self, i: usize) -> String {
+        match self {
+            UnaryOp::Negation => "-".to_string(),
+            UnaryOp::Tilde => "~".to_string(),
+        }
+    }
+}
+
+impl PrettyPrint for KeywordConstant {
+    fn pretty_print(&self, i: usize) -> String {
+        match self {
+            KeywordConstant::True => "true".to_string(),
+            KeywordConstant::False => "false".to_string(),
+            KeywordConstant::Null => "null".to_string(),
+            KeywordConstant::This => "this".to_string(),
+        }
+    }
+}
+
+impl PrettyPrint for BinaryOp {
+    fn pretty_print(&self, i: usize) -> String {
+        match self {
+            BinaryOp::Plus => "+".to_string(),
+            BinaryOp::Minus => "-".to_string(),
+            BinaryOp::Times => "*".to_string(),
+            BinaryOp::Div => "/".to_string(),
+            BinaryOp::And => "&".to_string(),
+            BinaryOp::Or => "|".to_string(),
+            BinaryOp::Lesser => "<".to_string(),
+            BinaryOp::Greater => ">".to_string(),
+            BinaryOp::Equal => "=".to_string(),
+        }
     }
 }
 

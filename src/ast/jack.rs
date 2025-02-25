@@ -98,7 +98,7 @@ pub enum Term {
     KeywordConstant(KeywordConstant),
     VarName(String, Option<Box<Expression>>),
     UnaryTerm(UnaryOp, Box<Term>),
-    Expression(Box<Expression>),
+    ParensExpr(Box<Expression>),
     SubroutineCall(SubroutineCall),
 }
 

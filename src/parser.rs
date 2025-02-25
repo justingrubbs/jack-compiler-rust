@@ -316,7 +316,7 @@ pub fn parse_term<'a>(
         let parens_expr = sym(Symbol::LParens)
             .ignore_then(expr.clone().map(Box::new))
             .then_ignore(sym(Symbol::RParens))
-            .map(Term::Expression);
+            .map(Term::ParensExpr);
         // let subroutine_call = ident()
         //     .then_ignore(sym(Symbol::Period))
         //     .then(ident())
