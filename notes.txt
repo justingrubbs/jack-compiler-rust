@@ -1,40 +1,5 @@
-Step 1: automate testing
-Step 2: add comments to parser
-Step 3: printer for jack ast
-Step 4: test parser
-
-currently on stpe 3 and 4 in tandem
-
 
  - Make sure parsing errors are working
- - organize the printer better !! !!! ! ! ! !!! !
-
-// For integration testing:
-//  - Generate a xml file with `T`, check it against normal xml file
-//  - function that compares files
-//  - Way to display Jack AST in xml format
-
-// for manual can just run `./tools/TextComparer.sh test/lexer/ArrayTest/Main.xml test/lexer/ArrayTest/MainT.xml`
-
-// all tests in test/lexer/ manually executed and passed
-
-
 
 // test that shows we're actually writing to filse (for other tests integrity)
-
-
-Parsing issues:
-
-The following was successfully parsed, so the issue is definitely in expression and terms
-
-`let tokens = vec![
-        crate::lexer::Token::Symbol(crate::lexer::Symbol::Plus),
-    ];
-    let result = crate::parser::parse_binary_op().parse(tokens);
-
-    match result {
-        Ok(parsed) => println!("{:?}", parsed),
-        Err(err) => eprintln!("Parsing error: {:?}", err),
-    }`
-remove `pub` after error fixed
 
