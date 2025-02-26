@@ -15,13 +15,13 @@ pub struct ClassDec {
 
 #[derive(Debug, Clone)]
 pub struct ClassVarDec {
-    pub class_var_type: ClassVarType,
+    pub class_var_type: Kind,
     pub r#type: Type,
     pub vars: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
-pub enum ClassVarType {
+pub enum Kind {
     Static,
     Field,
 }

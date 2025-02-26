@@ -1,8 +1,10 @@
+use crate::ast::jack::{Kind, Type};
 
 // Virtual machine commands
 pub enum Command {
     Transfer(Transfer),
     ACL,
+    Branch,
 }
 
 // Commands that move data
@@ -47,5 +49,22 @@ pub enum Logical {
     Not,
 }
 
-// Branch and function commands:
+// Branch commands:
+pub enum Branch {
+    Label(String),
+    Goto(String),
+    IfGoto(String),
+}
 
+// Function commands:
+pub enum Function {
+    Function(String, i16),
+    Call(String, i16),
+    Return,
+}
+
+pub struct Var {
+    r#type: Type,
+    kind: Kind,
+    index: i16,
+}

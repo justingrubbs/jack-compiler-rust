@@ -85,10 +85,10 @@ fn parse_class_var_dec() -> impl Parser<Token, ClassVarDec, Error = Simple<Token
 
 // parse_class_var_type:
 //  ('static' | 'field')
-fn parse_class_var_type() -> impl Parser<Token, ClassVarType, Error = Simple<Token>> {
+fn parse_class_var_type() -> impl Parser<Token, Kind, Error = Simple<Token>> {
     choice((
-        kw(Keyword::Static).to(ClassVarType::Static),
-        kw(Keyword::Field).to(ClassVarType::Field),
+        kw(Keyword::Static).to(Kind::Static),
+        kw(Keyword::Field).to(Kind::Field),
     ))
     .labelled("class variable type")
 }

@@ -3,10 +3,10 @@ mod ast {
     pub mod jack;
     pub mod vm;
 }
+mod compiler;
 mod lexer;
 mod parser;
 mod pretty_printer;
-mod compiler;
 mod tests;
 
 use pretty_printer::PrettyPrint;

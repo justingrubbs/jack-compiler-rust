@@ -49,11 +49,11 @@ impl PrettyPrint for ClassVarDec {
     }
 }
 
-impl PrettyPrint for ClassVarType {
+impl PrettyPrint for Kind {
     fn pretty_print(&self, _: usize) -> String {
         match self {
-            ClassVarType::Static => "static".to_string(),
-            ClassVarType::Field => "field".to_string(),
+            Kind::Static => "static".to_string(),
+            Kind::Field => "field".to_string(),
         }
     }
 }
