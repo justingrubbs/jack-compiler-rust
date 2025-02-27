@@ -71,21 +71,21 @@ fn parse_class_dec() -> impl Parser<Token, ClassDec, Error = Simple<Token>> {
 // parse_class_var_dec:
 //  [class_var_type] [type] [var_name] (',' [var_name])* ';'
 fn parse_class_var_dec() -> impl Parser<Token, ClassVarDec, Error = Simple<Token>> {
-    parse_class_var_type()
+    parse_kind()
         .then(parse_type())
         .then(ident().separated_by(sym(Symbol::Comma)))
         .then_ignore(sym(Symbol::Semicolon))
-        .map(|((class_var_type, r#type), vars)| ClassVarDec {
-            class_var_type,
+        .map(|((kind, r#type), vars)| ClassVarDec {
+            kind,
             r#type,
             vars,
         })
         .labelled("class variable declaration")
 }
 
-// parse_class_var_type:
+// parse_kind:
 //  ('static' | 'field')
-fn parse_class_var_type() -> impl Parser<Token, Kind, Error = Simple<Token>> {
+fn parse_kind() -> impl Parser<Token, Kind, Error = Simple<Token>> {
     choice((
         kw(Keyword::Static).to(Kind::Static),
         kw(Keyword::Field).to(Kind::Field),

@@ -41,11 +41,11 @@ impl PrettyPrint for ClassDec {
 
 impl PrettyPrint for ClassVarDec {
     fn pretty_print(&self, i: usize) -> String {
-        let class_var_type = self.class_var_type.pretty_print(i);
+        let kind = self.kind.pretty_print(i);
         let r#type = self.r#type.pretty_print(i);
         let vars = self.vars.iter().map(|v| v.to_string()).join(", ");
 
-        format!("{}{} {} {};", tab(i), class_var_type, r#type, vars)
+        format!("{}{} {} {};", tab(i), kind, r#type, vars)
     }
 }
 

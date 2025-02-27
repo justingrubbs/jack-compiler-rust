@@ -15,7 +15,7 @@ pub struct ClassDec {
 
 #[derive(Debug, Clone)]
 pub struct ClassVarDec {
-    pub class_var_type: Kind,
+    pub kind: Kind,
     pub r#type: Type,
     pub vars: Vec<String>,
 }

@@ -3,8 +3,9 @@ use crate::ast::jack::{Kind, Type};
 // Virtual machine commands
 pub enum Command {
     Transfer(Transfer),
-    ACL,
-    Branch,
+    ACL(ACL),
+    Branch(Branch),
+    Function(Function),
 }
 
 // Commands that move data
@@ -64,7 +65,25 @@ pub enum Function {
 }
 
 pub struct Var {
-    r#type: Type,
-    kind: Kind,
-    index: i16,
+    pub r#type: Type,
+    pub var_kind: VarKind,
+    pub index: i16,
+}
+
+#[derive(Clone)]
+pub enum VarKind {
+    Global(GlobalKind),
+    Local(LocalKind),
+}
+
+#[derive(Clone)]
+pub enum GlobalKind {
+    Static,
+    Field,
+}
+
+#[derive(Clone)]
+pub enum LocalKind {
+    Arg,
+    Var,
 }
