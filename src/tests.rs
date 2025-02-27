@@ -8,23 +8,6 @@ mod tests {
         expected_content == actual_content
     }
 
-    fn get_file_names(dir: &str) -> Vec<String> {
-        let path = std::path::Path::new(dir);
-        let mut file_names = Vec::new();
-
-        if let Ok(entries) = std::fs::read_dir(path) {
-            for entry in entries.flatten() {
-                let file_path = entry.path();
-                if file_path.extension().and_then(|e| e.to_str()) == Some("jack") {
-                    if let Some(name) = file_path.file_name().and_then(|n| n.to_str()) {
-                        file_names.push(name.to_string());
-                    }
-                }
-            }
-        }
-        file_names
-    }
-
     #[test]
     fn test_compare_files() {
         let act1 = std::path::Path::new("tests/unit_tests/goodCompareT.txt");

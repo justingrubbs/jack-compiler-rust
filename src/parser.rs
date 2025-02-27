@@ -75,11 +75,7 @@ fn parse_class_var_dec() -> impl Parser<Token, ClassVarDec, Error = Simple<Token
         .then(parse_type())
         .then(ident().separated_by(sym(Symbol::Comma)))
         .then_ignore(sym(Symbol::Semicolon))
-        .map(|((kind, r#type), vars)| ClassVarDec {
-            kind,
-            r#type,
-            vars,
-        })
+        .map(|((kind, r#type), vars)| ClassVarDec { kind, r#type, vars })
         .labelled("class variable declaration")
 }
 
