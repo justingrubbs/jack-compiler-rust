@@ -1,19 +1,22 @@
 use crate::ast::jack::{Kind, Type};
 
 // Virtual machine commands
+#[derive(Debug)]
 pub enum Command {
-    Transfer(Transfer),
+    Stack(Stack),
     ACL(ACL),
     Branch(Branch),
     Function(Function),
 }
 
 // Commands that move data
-pub enum Transfer {
+#[derive(Debug)]
+pub enum Stack {
     Push(Segment, i16),
     Pop(Segment, i16),
 }
 
+#[derive(Debug)]
 pub enum Segment {
     Argument,
     Local,
@@ -26,24 +29,28 @@ pub enum Segment {
 }
 
 // Arithemtic-Logical commands
+#[derive(Debug)]
 pub enum ACL {
     Arithmetic(Arithmetic),
     Comparison(Comparison),
     Logical(Logical),
 }
 
+#[derive(Debug)]
 pub enum Arithmetic {
     Add,
     Sub,
     Neg,
 }
 
+#[derive(Debug)]
 pub enum Comparison {
     Eq,
     Gt,
     Lt,
 }
 
+#[derive(Debug)]
 pub enum Logical {
     And,
     Or,
@@ -51,6 +58,7 @@ pub enum Logical {
 }
 
 // Branch commands:
+#[derive(Debug)]
 pub enum Branch {
     Label(String),
     Goto(String),
@@ -58,31 +66,33 @@ pub enum Branch {
 }
 
 // Function commands:
+#[derive(Debug)]
 pub enum Function {
     Function(String, i16),
     Call(String, i16),
     Return,
 }
 
+#[derive(Debug)]
 pub struct Var {
     pub r#type: Type,
     pub var_kind: VarKind,
     pub index: i16,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum VarKind {
     Global(GlobalKind),
     Local(LocalKind),
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum GlobalKind {
     Static,
     Field,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum LocalKind {
     Arg,
     Var,

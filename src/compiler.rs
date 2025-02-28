@@ -28,8 +28,9 @@ impl Compiler {
             instruction_stack: Vec::new(),
         };
         compiler.compile_class_dec(class.class_dec);
-        let ins = take(&mut compiler.instruction_stack);
-        ins
+        let ins = take(&mut compiler.file_name);
+        println!("{:?}", ins);
+        Vec::new()
     }
 
     // Methods to modify `Compiler`
@@ -143,25 +144,51 @@ impl Compiler {
                 Type::ClassName(self.class_name.to_string()),
                 LocalKind::Arg,
             ),
-            _ => todo!(),
+            _ => self,
         };
-
-        todo!()
+        self
     }
 
     fn compile_expression(&mut self, expression: Expression) -> &mut Self {
         self.compile_term(*expression.term);
         expression.bin.into_iter().for_each(|(b, t)| {
-            self.compile_term(*t).compile_op(b);
+            self.compile_term(*t).compile_binary_op(b);
         });
         self
     }
 
     fn compile_term(&mut self, term: Term) -> &mut Self {
-        todo!()
+        match term {
+            Term::IntegerConstant(i) => {
+                self.push(Command::Stack(Stack::Push(Segment::Constant, i)))
+            }
+            Term::StringConstant(s) => todo!(),
+            Term::KeywordConstant(kw) => self.compile_keyword_constant(kw),
+            Term::VarName(s, oe) => todo!(),
+            Term::UnaryTerm(uop, t) => self.compile_term(*t).compile_unary_op(uop),
+            Term::ParensExpr(e) => self.compile_expression(*e),
+            Term::SubroutineCall(sc) => todo!(),
+        }
     }
 
-    fn compile_op(&mut self, op: BinaryOp) -> &mut Self {
+    fn compile_keyword_constant(&mut self, kw: KeywordConstant) -> &mut Self {
+        match kw {
+            KeywordConstant::False => {
+                self.push(Command::Stack(Stack::Push(Segment::Constant, 0)))
+            }
+            KeywordConstant::True => self
+                .push(Command::Stack(Stack::Push(Segment::Constant, 1)))
+                .push(Command::ACL(ACL::Logical(Logical::Not))),
+            KeywordConstant::This => {
+                self.push(Command::Stack(Stack::Push(Segment::Pointer, 0)))
+            }
+            KeywordConstant::Null => {
+                self.push(Command::Stack(Stack::Push(Segment::Constant, 0)))
+            }
+        }
+    }
+
+    fn compile_binary_op(&mut self, op: BinaryOp) -> &mut Self {
         match op {
             BinaryOp::Plus => self.push(Command::ACL(ACL::Arithmetic(Arithmetic::Add))),
             BinaryOp::Minus => self.push(Command::ACL(ACL::Arithmetic(Arithmetic::Sub))),
@@ -178,6 +205,13 @@ impl Compiler {
             BinaryOp::Lesser => self.push(Command::ACL(ACL::Comparison(Comparison::Lt))),
             BinaryOp::Greater => self.push(Command::ACL(ACL::Comparison(Comparison::Gt))),
             BinaryOp::Equal => self.push(Command::ACL(ACL::Comparison(Comparison::Eq))),
+        }
+    }
+
+    fn compile_unary_op(&mut self, op: UnaryOp) -> &mut Self {
+        match op {
+            UnaryOp::Negation => self.push(Command::ACL(ACL::Arithmetic(Arithmetic::Neg))),
+            UnaryOp::Tilde => self.push(Command::ACL(ACL::Logical(Logical::Not))),
         }
     }
 }

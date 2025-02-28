@@ -226,8 +226,7 @@ fn parse_if_statement<P: Parser<Token, Statement, Error = Simple<Token>> + Clone
             kw(Keyword::Else)
                 .ignore_then(
                     sym(Symbol::LCurly)
-                        // .ignore_then(statement.repeated())
-                        .ignore_then(statement.clone().repeated())
+                        .ignore_then(statement.repeated())
                         .then_ignore(sym(Symbol::RCurly)),
                 )
                 .or_not(),

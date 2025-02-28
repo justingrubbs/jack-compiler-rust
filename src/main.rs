@@ -28,7 +28,9 @@ fn main() -> Result<(), Error> {
     if metadata.is_file() {
         let class = parse_jack_file(path)?;
         let class_string = class.pretty_print(0);
-        let output_path = format!("{}T.jack", path.trim_end_matches(".jack"));
+        let file_name = path.trim_end_matches(".jack");
+        let vm = crate::compiler::Compiler::compile(file_name.to_string(), class);
+        let output_path = format!("{}T.vm", file_name);
 
         fs::write(output_path, class_string)?;
     }
