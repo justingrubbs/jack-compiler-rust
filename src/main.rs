@@ -1,16 +1,17 @@
 mod ast {
-    pub mod token;
     pub mod jack;
+    pub mod token;
     pub mod vm;
 }
 mod compiler {
+    pub mod jack_to_vm;
     pub mod lexer;
     pub mod parser;
-    pub mod jack_to_vm;
 }
 mod pretty_printer {
-    pub mod lexer;
     pub mod jack;
+    pub mod lexer;
+    pub mod vm;
 }
 mod tests;
 
@@ -32,12 +33,12 @@ fn main() -> Result<(), Error> {
 
     if metadata.is_file() {
         let class = parse_jack_file(path)?;
-        let class_string = class.pretty_print(0);
         let file_name = path.trim_end_matches(".jack");
-        let vm = crate::compiler::jack_to_vm::Compiler::compile(file_name.to_string(), class);
+        let vm = crate::compiler::jack_to_vm::JackToVm::compile(file_name.to_string(), class);
+        let vm_string = crate::pretty_printer::vm::print_vm(vm);
         let output_path = format!("{}T.vm", file_name);
 
-        fs::write(output_path, class_string)?;
+        fs::write(output_path, vm_string)?;
     }
     // else if metadata.is_dir() {
     //     // If it's a directory, parse all .jack files

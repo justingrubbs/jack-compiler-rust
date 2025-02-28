@@ -4,7 +4,7 @@ use crate::ast::vm::*;
 use std::collections::HashMap;
 use std::mem::take;
 
-pub struct Compiler {
+pub struct JackToVm {
     file_name: String,
     class_name: String,
     global_ctx: HashMap<String, Var>,
@@ -15,7 +15,7 @@ pub struct Compiler {
     instruction_stack: Vec<Command>,
 }
 
-impl Compiler {
+impl JackToVm {
     pub fn compile(file_name: String, class: Class) -> Vec<Command> {
         let mut compiler = Self {
             file_name,
@@ -176,8 +176,11 @@ impl Compiler {
                 Some(r) => self
                     .compile_expression(r)
                     .push(Command::Function(Function::Return)),
-                None => self.push(Command::Function(Function::Return)),
+                None => self.push(Command::Stack(Stack::Push(Segment::Constant,0)))
+                    .push(Command::Function(Function::Return)),
             },
+            // Statement::DoStatement(sc) => self.compile_subroutine_call(sc)
+            //     .push(Command::Stack(Stack::Pop(Segment::Temp,0))),
             _ => todo!(),
         }
     }

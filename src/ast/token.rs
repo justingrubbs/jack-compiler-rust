@@ -56,4 +56,3 @@ pub enum Symbol {
     Equal,
     Tilde,
 }
-

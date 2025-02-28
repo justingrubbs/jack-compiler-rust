@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use crate::pretty_printer::lexer;
     use crate::pretty_printer::jack::PrettyPrint;
+    use crate::pretty_printer::lexer;
 
     fn compare_files(actual: &std::path::Path, expected: &std::path::Path) -> bool {
         let actual_content = std::fs::read_to_string(actual).unwrap();

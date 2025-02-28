@@ -1,5 +1,3 @@
-class test {
-    function String three() {
-        return "string";
-    }
-}
+function test.main 0
+push constant 0
+return
