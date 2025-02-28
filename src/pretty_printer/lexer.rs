@@ -1,7 +1,15 @@
-use crate::ast::tokens::*;
+use crate::ast::token::*;
 
 // Printing:
-pub fn print_token(token: Token) -> String {
+pub fn print_tokens(tokens: Vec<Token>) -> String {
+    tokens
+        .iter()
+        .map(|token| format!("{}", print_token(token.clone())))
+        .collect::<Vec<String>>()
+        .join("\n")
+}
+
+fn print_token(token: Token) -> String {
     format!("{}", token.as_str())
 }
 

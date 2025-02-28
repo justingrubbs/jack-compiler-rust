@@ -1,5 +1,5 @@
 use crate::ast::jack::*;
-use crate::ast::tokens::*;
+use crate::ast::token::*;
 use chumsky::prelude::*;
 
 // Token helper functions:

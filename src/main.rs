@@ -1,15 +1,16 @@
 mod ast {
-    pub mod tokens;
+    pub mod token;
     pub mod jack;
     pub mod vm;
-    pub mod asm;
 }
-mod compiler;
-mod lexer;
-mod parser;
+mod compiler {
+    pub mod lexer;
+    pub mod parser;
+    pub mod jack_to_vm;
+}
 mod pretty_printer {
+    pub mod lexer;
     pub mod jack;
-    pub mod tokenizer;
 }
 mod tests;
 
@@ -33,7 +34,7 @@ fn main() -> Result<(), Error> {
         let class = parse_jack_file(path)?;
         let class_string = class.pretty_print(0);
         let file_name = path.trim_end_matches(".jack");
-        let vm = crate::compiler::Compiler::compile(file_name.to_string(), class);
+        let vm = crate::compiler::jack_to_vm::Compiler::compile(file_name.to_string(), class);
         let output_path = format!("{}T.vm", file_name);
 
         fs::write(output_path, class_string)?;
@@ -62,9 +63,9 @@ fn main() -> Result<(), Error> {
 }
 
 // Tokenize a single Jack file
-pub fn tokenize_jack_file(file_path: &str) -> Result<Vec<crate::ast::tokens::Token>, Error> {
+pub fn tokenize_jack_file(file_path: &str) -> Result<Vec<crate::ast::token::Token>, Error> {
     let contents = fs::read_to_string(file_path)?;
-    crate::lexer::tokenize()
+    crate::compiler::lexer::tokenize()
         .parse(contents)
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)))
 }
@@ -72,7 +73,7 @@ pub fn tokenize_jack_file(file_path: &str) -> Result<Vec<crate::ast::tokens::Tok
 // Parse a single Jack file
 pub fn parse_jack_file(file_path: &str) -> Result<crate::ast::jack::Class, Error> {
     let tokens = tokenize_jack_file(file_path)?;
-    crate::parser::parse_class()
+    crate::compiler::parser::parse_class()
         .parse(tokens)
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)))
 }
