@@ -32,9 +32,8 @@ fn main() -> Result<(), Error> {
     let metadata = fs::metadata(path)?;
 
     if metadata.is_file() {
-        let class = parse_jack_file(path)?;
+        let vm = jack_to_vm(path)?;
         let file_name = path.trim_end_matches(".jack");
-        let vm = crate::compiler::jack_to_vm::JackToVm::compile(file_name.to_string(), class);
         let vm_string = crate::pretty_printer::vm::print_vm(vm);
         let output_path = format!("{}T.vm", file_name);
 
@@ -77,4 +76,13 @@ pub fn parse_jack_file(file_path: &str) -> Result<crate::ast::jack::Class, Error
     crate::compiler::parser::parse_class()
         .parse(tokens)
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)))
+}
+
+// Compile a single Jack file into VM
+pub fn jack_to_vm(file_path: &str) -> Result<Vec<crate::ast::vm::Command>, Error> {
+    let class = parse_jack_file(file_path)?;
+    Ok(crate::compiler::jack_to_vm::JackToVm::compile(
+        file_path.trim_end_matches(".jack").to_string(),
+        class,
+    ))
 }

@@ -26,17 +26,14 @@ mod tests {
     // Input is without file extension
     fn test_lexer(file: &str) {
         let jack_path: String = format!("{}.jack", file); // Create a new String
-        let exp_path: String = format!("{}.xml", file); // Create a new String
-        let act_path: String = format!("{}T.xml", file); // Create a new String
+        let exp_path: String = format!("{}Exp.xml", file); // Create a new String
+        let act_path: String = format!("{}Act.xml", file); // Create a new String
 
         let r_tokens = crate::tokenize_jack_file(&jack_path);
         match r_tokens {
             Ok(tokens) => {
                 let token_string = crate::pretty_printer::lexer::print_tokens(tokens);
-                std::fs::write(
-                    act_path.clone(),
-                    format!("<tokens>\n{}\n</tokens>\n", token_string),
-                );
+                std::fs::write(act_path.clone(), token_string);
                 let actual = std::path::Path::new(&act_path);
                 let expected = std::path::Path::new(&exp_path);
                 assert!(
@@ -121,5 +118,31 @@ mod tests {
     #[test]
     fn test_parser_square_squaregame() {
         test_parser("tests/parser/Square/SquareGame")
+    }
+
+    fn test_jack_to_vm(file: &str) {
+        let jack_path: String = format!("{}.jack", file); // Create a new String
+        let exp_path: String = format!("{}Exp.vm", file); // Create a new String
+        let act_path: String = format!("{}Act.vm", file); // Create a new String
+
+        let r_commands = crate::jack_to_vm(&jack_path);
+        match r_commands {
+            Ok(commands) => {
+                let vm_string = crate::pretty_printer::vm::print_vm(commands);
+                std::fs::write(act_path.clone(), vm_string);
+                let actual = std::path::Path::new(&act_path);
+                let expected = std::path::Path::new(&exp_path);
+                assert!(
+                    compare_files(actual, expected),
+                    "{} and {} do not match",
+                    act_path,
+                    exp_path
+                )
+            }
+            Err(e) => {
+                eprintln!("Error compiling to VM {}: {:?}", jack_path, e);
+                panic!("Failed to compile Jack file to VM: {}", jack_path);
+            }
+        }
     }
 }

@@ -2,11 +2,14 @@ use crate::ast::token::*;
 
 // Printing:
 pub fn print_tokens(tokens: Vec<Token>) -> String {
-    tokens
-        .iter()
-        .map(|token| format!("{}", print_token(token.clone())))
-        .collect::<Vec<String>>()
-        .join("\n")
+    format!(
+        "<tokens>\n{}\n</tokens>\n",
+        tokens
+            .iter()
+            .map(|token| format!("{}", print_token(token.clone())))
+            .collect::<Vec<String>>()
+            .join("\n")
+    )
 }
 
 fn print_token(token: Token) -> String {

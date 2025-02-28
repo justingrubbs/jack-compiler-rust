@@ -176,7 +176,8 @@ impl JackToVm {
                 Some(r) => self
                     .compile_expression(r)
                     .push(Command::Function(Function::Return)),
-                None => self.push(Command::Stack(Stack::Push(Segment::Constant,0)))
+                None => self
+                    .push(Command::Stack(Stack::Push(Segment::Constant, 0)))
                     .push(Command::Function(Function::Return)),
             },
             // Statement::DoStatement(sc) => self.compile_subroutine_call(sc)
