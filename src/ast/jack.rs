@@ -39,7 +39,7 @@ pub struct SubroutineDec {
     pub subroutine_type: SubroutineType,
     pub subroutine_return_type: SubroutineReturnType,
     pub subroutine_name: String,
-    pub parameter_list: Option<Vec<Parameter>>,
+    pub parameter_list: Vec<Parameter>,
     pub subroutine_body: SubroutineBody,
 }
 

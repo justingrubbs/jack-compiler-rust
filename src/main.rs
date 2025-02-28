@@ -1,15 +1,19 @@
 mod ast {
-    pub mod asm;
+    pub mod tokens;
     pub mod jack;
     pub mod vm;
+    pub mod asm;
 }
 mod compiler;
 mod lexer;
 mod parser;
-mod pretty_printer;
+mod pretty_printer {
+    pub mod jack;
+    pub mod tokenizer;
+}
 mod tests;
 
-use pretty_printer::PrettyPrint;
+use pretty_printer::jack::PrettyPrint;
 use std::env;
 use std::fs;
 use std::io::{self, Error};
@@ -58,7 +62,7 @@ fn main() -> Result<(), Error> {
 }
 
 // Tokenize a single Jack file
-pub fn tokenize_jack_file(file_path: &str) -> Result<Vec<crate::lexer::Token>, Error> {
+pub fn tokenize_jack_file(file_path: &str) -> Result<Vec<crate::ast::tokens::Token>, Error> {
     let contents = fs::read_to_string(file_path)?;
     crate::lexer::tokenize()
         .parse(contents)

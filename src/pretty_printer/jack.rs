@@ -77,9 +77,9 @@ impl PrettyPrint for SubroutineDec {
         let parameter_list = self
             .parameter_list
             .clone()
-            .map_or(String::new(), |params: Vec<Parameter>| {
-                params.iter().map(|p| p.pretty_print(i)).join(", ")
-            });
+            .iter()
+            .map(|p| p.pretty_print(i))
+            .join(", ");
 
         let subroutine_body = self.subroutine_body.pretty_print(i + 1);
 

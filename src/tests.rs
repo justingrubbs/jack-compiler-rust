@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use crate::pretty_printer::PrettyPrint;
+    use crate::pretty_printer::tokenizer;
+    use crate::pretty_printer::jack::PrettyPrint;
 
     fn compare_files(actual: &std::path::Path, expected: &std::path::Path) -> bool {
         let actual_content = std::fs::read_to_string(actual).unwrap();
@@ -33,7 +34,7 @@ mod tests {
             Ok(tokens) => {
                 let token_string = tokens
                     .iter()
-                    .map(|token| format!("{}", crate::lexer::print_token(token.clone())))
+                    .map(|token| format!("{}", crate::pretty_printer::tokenizer::print_token(token.clone())))
                     .collect::<Vec<String>>()
                     .join("\n");
                 std::fs::write(

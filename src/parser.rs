@@ -1,5 +1,5 @@
 use crate::ast::jack::*;
-use crate::lexer::*;
+use crate::ast::tokens::*;
 use chumsky::prelude::*;
 
 // Token helper functions:
@@ -138,12 +138,11 @@ fn parse_subroutine_return_type() -> impl Parser<Token, SubroutineReturnType, Er
 
 // parse_parameter_list:
 //  (([type] ([var_name]) (',' [type] [var_name])*))?
-fn parse_parameter_list() -> impl Parser<Token, Option<Vec<Parameter>>, Error = Simple<Token>> {
+fn parse_parameter_list() -> impl Parser<Token, Vec<Parameter>, Error = Simple<Token>> {
     (parse_type()
         .then(ident())
         .map(|(r#type, var_name)| Parameter { r#type, var_name }))
     .separated_by(sym(Symbol::Comma))
-    .or_not()
     .labelled("parameter list")
 }
 

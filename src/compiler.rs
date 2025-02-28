@@ -28,8 +28,7 @@ impl Compiler {
             instruction_stack: Vec::new(),
         };
         let ins = compiler.compile_class_dec(class.class_dec);
-        println!("{:?}", ins.instruction_stack);
-        todo!()
+        take(&mut ins.instruction_stack)
     }
 
     // Methods to modify `Compiler`
@@ -138,18 +137,36 @@ impl Compiler {
     fn compile_subroutine_dec(&mut self, subroutine_dec: SubroutineDec) -> &mut Self {
         self.reset_local();
         match subroutine_dec.subroutine_type {
-            SubroutineType::Method => self.insert_local(
-                "this".to_string(),
-                Type::ClassName(self.class_name.to_string()),
-                LocalKind::Arg,
-            ),
-            SubroutineType::Function => self.push(Command::Function(Function::Function(
-                format!("{}.{}", self.file_name, subroutine_dec.subroutine_name),
-                // bad
-                2,
-            ))),
-            _ => todo!(),
-        };
+            // SubroutineType::Method => self.insert_local(
+            //     "this".to_string(),
+            //     Type::ClassName(self.class_name.to_string()),
+            //     LocalKind::Arg,
+            // ),
+            SubroutineType::Function => {
+                let parameter_length: i16 = subroutine_dec
+                    .parameter_list
+                    .clone()
+                    .len()
+                    .try_into()
+                    .unwrap();
+                self.compile_parameter_list(subroutine_dec.parameter_list);
+                self.push(Command::Function(Function::Function(
+                    format!("{}.{}", self.file_name, subroutine_dec.subroutine_name),
+                    parameter_length,
+                )));
+                for statement in subroutine_dec.subroutine_body.stmts {
+                    self.compile_statement(statement);
+                }
+                self
+            }
+            _ => self,
+        }
+    }
+
+    fn compile_parameter_list(&mut self, parameter_list: Vec<Parameter>) -> &mut Self {
+        for parameter in parameter_list {
+            self.insert_local(parameter.var_name, parameter.r#type, LocalKind::Arg);
+        }
         self
     }
 
