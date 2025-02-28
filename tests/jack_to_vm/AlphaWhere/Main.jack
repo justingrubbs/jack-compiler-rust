@@ -1,0 +1,25 @@
+// This file is based on www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+//
+// Author: Gabriel Ferrer
+// File name: projects/11/AlphaWhere/Main.jack
+
+/**
+ * Determines if the character input is in the first half or second half of the alphabet.
+ * Prints -1 for first half and 0 for second half.
+ */
+class Main {
+
+   function void main() {
+      var int value;
+      let value = Keyboard.readChar() - 77;
+      do Output.println();
+      if (value < 0) {
+         do Output.printInt(true);
+      } else {
+         do Output.printInt(false);
+      }
+      return;
+   }
+}

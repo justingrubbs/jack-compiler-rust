@@ -1,0 +1,29 @@
+// This file is based on www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+//
+// Author: Gabriel Ferrer
+// File name: projects/11/Factorial/Main.jack
+
+/**
+ * Prints the factorial of the input.
+ */
+class Main {
+
+   function void main() {
+      var int target;
+      let target = Keyboard.readInt("Enter num:");
+      do Output.println();
+      do Output.printInt(Main.factorial(target));
+      do Output.println();
+      return;
+   }
+
+   function int factorial(int n) {
+      if (n = 0) {
+        return 1;
+      } else {
+        return n * Main.factorial(n - 1);
+      }
+   }
+}

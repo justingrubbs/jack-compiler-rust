@@ -1,0 +1,18 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+
+// Simplified verson of Seven by GJF
+// File name: projects/11/Three/Main.jack
+
+/**
+ * Prints 3 at the top-left of the screen.
+ */
+class Main {
+
+   function void main() {
+      do Output.printInt(3);
+      return;
+   }
+
+}

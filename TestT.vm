@@ -1,7 +1,0 @@
-class Test {
-    field int x, y;
-    field int size;
-    method void dispose() {
-        let t = x + y;
-    }
-}

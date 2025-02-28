@@ -1,0 +1,25 @@
+// This file is based on www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+//
+// Author: Gabriel Ferrer
+// File name: projects/11/AlphaShow/Main.jack
+
+/**
+ * Prints all characters up to and including the input.
+ */
+class Main {
+
+   function void main() {
+      var int target, counter;
+      let target = Keyboard.readChar();
+      do Output.println();
+      let counter = 65;
+      while (~(counter > target)) {
+        do Output.printChar(counter);
+        let counter = counter + 1;
+      }
+      do Output.println();
+      return;
+   }
+}

@@ -149,6 +149,18 @@ impl Compiler {
         self
     }
 
+    fn compile_statement(&mut self, statement: Statement) -> &mut Self {
+        match statement {
+            Statement::ReturnStatement(or) => match or {
+                Some(r) => self
+                    .compile_expression(r)
+                    .push(Command::Function(Function::Return)),
+                None => self.push(Command::Function(Function::Return)),
+            },
+            _ => todo!(),
+        }
+    }
+
     fn compile_expression(&mut self, expression: Expression) -> &mut Self {
         self.compile_term(*expression.term);
         expression.bin.into_iter().for_each(|(b, t)| {
@@ -162,7 +174,23 @@ impl Compiler {
             Term::IntegerConstant(i) => {
                 self.push(Command::Stack(Stack::Push(Segment::Constant, i)))
             }
-            Term::StringConstant(s) => todo!(),
+            Term::StringConstant(s) => {
+                let s_length: i16 = s.len().try_into().unwrap();
+                self.push(Command::Stack(Stack::Push(Segment::Constant, s_length)))
+                    .push(Command::Function(Function::Call(
+                        "String.new".to_string(),
+                        1,
+                    )));
+                for c in s.chars() {
+                    let char_code = c as i16;
+                    self.push(Command::Stack(Stack::Push(Segment::Constant, char_code)))
+                        .push(Command::Function(Function::Call(
+                            "String.appendChar".to_string(),
+                            2,
+                        )));
+                }
+                self
+            }
             Term::KeywordConstant(kw) => self.compile_keyword_constant(kw),
             Term::VarName(s, oe) => todo!(),
             Term::UnaryTerm(uop, t) => self.compile_term(*t).compile_unary_op(uop),
@@ -173,18 +201,12 @@ impl Compiler {
 
     fn compile_keyword_constant(&mut self, kw: KeywordConstant) -> &mut Self {
         match kw {
-            KeywordConstant::False => {
-                self.push(Command::Stack(Stack::Push(Segment::Constant, 0)))
-            }
+            KeywordConstant::False => self.push(Command::Stack(Stack::Push(Segment::Constant, 0))),
             KeywordConstant::True => self
                 .push(Command::Stack(Stack::Push(Segment::Constant, 1)))
                 .push(Command::ACL(ACL::Logical(Logical::Not))),
-            KeywordConstant::This => {
-                self.push(Command::Stack(Stack::Push(Segment::Pointer, 0)))
-            }
-            KeywordConstant::Null => {
-                self.push(Command::Stack(Stack::Push(Segment::Constant, 0)))
-            }
+            KeywordConstant::This => self.push(Command::Stack(Stack::Push(Segment::Pointer, 0))),
+            KeywordConstant::Null => self.push(Command::Stack(Stack::Push(Segment::Constant, 0))),
         }
     }
 
