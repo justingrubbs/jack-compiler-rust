@@ -27,10 +27,9 @@ impl Compiler {
             label_count: 0,
             instruction_stack: Vec::new(),
         };
-        compiler.compile_class_dec(class.class_dec);
-        let ins = take(&mut compiler.file_name);
-        println!("{:?}", ins);
-        Vec::new()
+        let ins = compiler.compile_class_dec(class.class_dec);
+        println!("{:?}", ins.instruction_stack);
+        todo!()
     }
 
     // Methods to modify `Compiler`
@@ -138,13 +137,18 @@ impl Compiler {
 
     fn compile_subroutine_dec(&mut self, subroutine_dec: SubroutineDec) -> &mut Self {
         self.reset_local();
-        let _ = match subroutine_dec.subroutine_type {
+        match subroutine_dec.subroutine_type {
             SubroutineType::Method => self.insert_local(
                 "this".to_string(),
                 Type::ClassName(self.class_name.to_string()),
                 LocalKind::Arg,
             ),
-            _ => self,
+            SubroutineType::Function => self.push(Command::Function(Function::Function(
+                format!("{}.{}", self.file_name, subroutine_dec.subroutine_name),
+                // bad
+                2,
+            ))),
+            _ => todo!(),
         };
         self
     }
