@@ -144,35 +144,91 @@ impl JackToVm {
         self
     }
 
-    fn compile_subroutine_dec(&mut self, subroutine_dec: SubroutineDec) -> &mut Self {
-        self.reset_local();
-        match subroutine_dec.subroutine_type {
-            // SubroutineType::Method => self.insert_local(
-            //     "this".to_string(),
-            //     Type::ClassName(self.class_name.to_string()),
-            //     LocalKind::Arg,
-            // ),
-            SubroutineType::Function => {
-                self.compile_parameter_list(subroutine_dec.parameter_list);
-
-                let mut local_length = 0;
-                map_iter(subroutine_dec.subroutine_body.var_decs, |var_dec| {
+    fn compile_subroutine_dec_head(
+        &mut self,
+        bool: bool,
+        var_decs: Vec<VarDec>,
+        subroutine_name: String,
+    ) -> &mut Self {
+        let mut local_length = 0;
+        match bool {
+            false => {
+                map_iter(var_decs, |var_dec| {
                     self.compile_var_dec(var_dec.clone());
                     local_length += var_dec.var_name.len() as u16
                 });
-
                 self.push(Command::Function(Function::Function(
-                    format!("{}.{}", self.file_name, subroutine_dec.subroutine_name),
+                    format!("{}.{}", self.file_name, subroutine_name),
                     local_length,
-                )));
+                )))
+            }
+            true => {
+                map_iter(var_decs, |var_dec| {
+                    self.compile_var_dec(var_dec.clone());
+                    local_length += var_dec.var_name.len() as u16
+                });
+                self.push(Command::Function(Function::Function(
+                    format!("{}.{}", self.file_name, subroutine_name),
+                    local_length,
+                )))
+                .push(Command::Stack(Stack::Push(Segment::Argument, 0)))
+                .push(Command::Stack(Stack::Pop(Segment::Pointer, 0)))
+            }
+        }
+    }
+
+    fn compile_subroutine_dec(&mut self, subroutine_dec: SubroutineDec) -> &mut Self {
+        self.reset_local();
+        match subroutine_dec.subroutine_type {
+            SubroutineType::Method => {
+                self.insert_local(
+                    "this".to_string(),
+                    Type::ClassName(self.class_name.to_string()),
+                    LocalKind::Arg,
+                )
+                .compile_parameter_list(subroutine_dec.parameter_list)
+                .compile_subroutine_dec_head(
+                    true,
+                    subroutine_dec.subroutine_body.var_decs,
+                    subroutine_dec.subroutine_name,
+                );
+                map_iter(subroutine_dec.subroutine_body.stmts, |statement| {
+                    self.compile_statement(statement);
+                });
+                self
+            }
+            SubroutineType::Function => {
+                self.compile_parameter_list(subroutine_dec.parameter_list)
+                    .compile_subroutine_dec_head(
+                        false,
+                        subroutine_dec.subroutine_body.var_decs,
+                        subroutine_dec.subroutine_name,
+                    );
 
                 map_iter(subroutine_dec.subroutine_body.stmts, |statement| {
                     self.compile_statement(statement);
                 });
-
                 self
             }
-            _ => self,
+            SubroutineType::Constructor => {
+                self.compile_parameter_list(subroutine_dec.parameter_list)
+                    .compile_subroutine_dec_head(
+                        false,
+                        subroutine_dec.subroutine_body.var_decs,
+                        subroutine_dec.subroutine_name,
+                    );
+                let i = self.get_global_kind_count(GlobalKind::Field);
+                self.push(Command::Stack(Stack::Push(Segment::Constant, i)))
+                    .push(Command::Function(Function::Call(
+                        "Memory.alloc".to_string(),
+                        1,
+                    )))
+                    .push(Command::Stack(Stack::Pop(Segment::Pointer, 0)));
+                map_iter(subroutine_dec.subroutine_body.stmts, |statement| {
+                    self.compile_statement(statement);
+                });
+                self
+            }
         }
     }
 
@@ -220,8 +276,15 @@ impl JackToVm {
                     None => self
                         .compile_expression(e)
                         .push(Command::Stack(Stack::Pop(var_segment, index))),
-                    // Need to allow for array stuff
-                    Some(a) => todo!(),
+                    Some(e2) => self
+                        .compile_expression(e)
+                        .push(Command::Stack(Stack::Push(var_segment, index)))
+                        .compile_binary_op(BinaryOp::Plus)
+                        .compile_expression(e2)
+                        .push(Command::Stack(Stack::Pop(Segment::Temp, 0)))
+                        .push(Command::Stack(Stack::Pop(Segment::Pointer, 1)))
+                        .push(Command::Stack(Stack::Push(Segment::Temp, 0)))
+                        .push(Command::Stack(Stack::Pop(Segment::That, 0))),
                 }
             }
             Statement::WhileStatement(expr, stmts) => {
