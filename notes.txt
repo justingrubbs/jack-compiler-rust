@@ -1,4 +1,10 @@
 
+// heavily cleanup jack_to_vm compiler step
+
+// arrays still broken
+
+
+
  - Make sure parsing errors are working
 
 // test that shows we're actually writing to filse (for other tests integrity)
