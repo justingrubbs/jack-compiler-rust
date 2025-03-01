@@ -137,11 +137,11 @@ impl JackToVm {
     fn compile_subroutine_dec(&mut self, subroutine_dec: SubroutineDec) -> &mut Self {
         self.reset_local();
         match subroutine_dec.subroutine_type {
-            // SubroutineType::Method => self.insert_local(
-            //     "this".to_string(),
-            //     Type::ClassName(self.class_name.to_string()),
-            //     LocalKind::Arg,
-            // ),
+            SubroutineType::Method => self.insert_local(
+                "this".to_string(),
+                Type::ClassName(self.class_name.to_string()),
+                LocalKind::Arg,
+            ),
             SubroutineType::Function => {
                 let parameter_length: i16 = subroutine_dec
                     .parameter_list
@@ -154,6 +154,9 @@ impl JackToVm {
                     format!("{}.{}", self.file_name, subroutine_dec.subroutine_name),
                     parameter_length,
                 )));
+                for var_dec in subroutine_dec.subroutine_body.var_decs {
+                    self.compile_var_dec(var_dec);
+                }
                 for statement in subroutine_dec.subroutine_body.stmts {
                     self.compile_statement(statement);
                 }
@@ -170,6 +173,11 @@ impl JackToVm {
         self
     }
 
+    fn compile_var_dec(&mut self, var_dec: VarDec) -> &mut Self {
+        // Needs to take in a VarKind for hwen inserting
+        todo!()
+    }
+
     fn compile_statement(&mut self, statement: Statement) -> &mut Self {
         match statement {
             Statement::ReturnStatement(or) => match or {
@@ -180,9 +188,47 @@ impl JackToVm {
                     .push(Command::Stack(Stack::Push(Segment::Constant, 0)))
                     .push(Command::Function(Function::Return)),
             },
-            // Statement::DoStatement(sc) => self.compile_subroutine_call(sc)
-            //     .push(Command::Stack(Stack::Pop(Segment::Temp,0))),
+            Statement::DoStatement(sc) => self
+                .compile_subroutine_call(sc)
+                .push(Command::Stack(Stack::Pop(Segment::Temp, 0))),
+            Statement::LetStatement(ident, array, e) => {
+                let var = self.lookup(&ident).expect("Variable not in context");
+                let var_segment = match var.var_kind {
+                    VarKind::Local(_) => Segment::Local,
+                    VarKind::Global(ref g) => match g {
+                        GlobalKind::Field => Segment::This,
+                        GlobalKind::Static => Segment::Static,
+                    },
+                };
+                let index = var.index;
+                match array {
+                    None => self
+                        .compile_expression(e)
+                        .push(Command::Stack(Stack::Pop(var_segment, index))),
+                    Some(a) => todo!(),
+                }
+            }
             _ => todo!(),
+        }
+    }
+
+    fn compile_subroutine_call(&mut self, subroutine_call: SubroutineCall) -> &mut Self {
+        match subroutine_call {
+            SubroutineCall::Call(subroutine_name, exprs) => todo!(),
+            SubroutineCall::ClassCall(name, subroutine_name, exprs) => match self.lookup(&name) {
+                None => {
+                    let mut exprs_length = 0;
+                    for expr in exprs {
+                        self.compile_expression(*expr);
+                        exprs_length += 1;
+                    }
+                    self.push(Command::Function(Function::Call(
+                        format!("{}.{}", name, subroutine_name),
+                        exprs_length,
+                    )))
+                }
+                Some(t) => todo!(),
+            },
         }
     }
 
@@ -220,7 +266,7 @@ impl JackToVm {
             Term::VarName(s, oe) => todo!(),
             Term::UnaryTerm(uop, t) => self.compile_term(*t).compile_unary_op(uop),
             Term::ParensExpr(e) => self.compile_expression(*e),
-            Term::SubroutineCall(sc) => todo!(),
+            Term::SubroutineCall(sc) => self.compile_subroutine_call(sc),
         }
     }
 

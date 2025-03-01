@@ -15,12 +15,12 @@ mod pretty_printer {
 }
 mod tests;
 
-use pretty_printer::jack::PrettyPrint;
 use std::env;
 use std::fs;
 use std::io::{self, Error};
 
 use chumsky::Parser;
+use std::path::Path;
 
 fn main() -> Result<(), Error> {
     // Get the command-line arguments
@@ -80,9 +80,11 @@ pub fn parse_jack_file(file_path: &str) -> Result<crate::ast::jack::Class, Error
 
 // Compile a single Jack file into VM
 pub fn jack_to_vm(file_path: &str) -> Result<Vec<crate::ast::vm::Command>, Error> {
-    let class = parse_jack_file(file_path)?;
-    Ok(crate::compiler::jack_to_vm::JackToVm::compile(
-        file_path.trim_end_matches(".jack").to_string(),
-        class,
-    ))
+    let file_name = Path::new(file_path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or(file_path)
+        .to_string();
+    parse_jack_file(file_path)
+        .map(|class| crate::compiler::jack_to_vm::JackToVm::compile(file_name.to_string(), class))
 }

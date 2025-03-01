@@ -145,4 +145,24 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn test_jack_to_vm_three_main() {
+        test_jack_to_vm("tests/jack_to_vm/Three/Main")
+    }
+
+    #[test]
+    fn test_jack_to_vm_factorial_main() {
+        test_jack_to_vm("tests/jack_to_vm/Factorial/Main")
+    }
+
+    #[test]
+    fn test_jack_to_vm_alphawhere_main() {
+        test_jack_to_vm("tests/jack_to_vm/AlphaWhere/Main")
+    }
+
+    #[test]
+    fn test_jack_to_vm_alphashow_main() {
+        test_jack_to_vm("tests/jack_to_vm/AlphaShow/Main")
+    }
 }
