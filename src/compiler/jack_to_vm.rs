@@ -124,23 +124,23 @@ impl JackToVm {
 
     // Compilation functions:
     fn compile_class_dec(&mut self, class_dec: ClassDec) -> &mut Self {
-        for cvd in class_dec.class_var_dec {
+        map_iter(class_dec.class_var_dec, |cvd| {
             self.compile_class_var_dec(cvd);
-        }
-        for sd in class_dec.subroutine_dec {
+        });
+        map_iter(class_dec.subroutine_dec, |sd| {
             self.compile_subroutine_dec(sd);
-        }
+        });
         self
     }
 
     fn compile_class_var_dec(&mut self, class_var_dec: ClassVarDec) -> &mut Self {
-        for ident in class_var_dec.vars {
+        map_iter(class_var_dec.vars, |ident| {
             self.insert_global(
                 ident,
                 class_var_dec.r#type.clone(),
                 kind_to_global(class_var_dec.kind.clone()),
             );
-        }
+        });
         self
     }
 
@@ -156,17 +156,20 @@ impl JackToVm {
                 self.compile_parameter_list(subroutine_dec.parameter_list);
 
                 let mut local_length = 0;
-                for var_dec in subroutine_dec.subroutine_body.var_decs {
+                map_iter(subroutine_dec.subroutine_body.var_decs, |var_dec| {
                     self.compile_var_dec(var_dec.clone());
                     local_length += var_dec.var_name.len() as u16
-                }
+                });
+
                 self.push(Command::Function(Function::Function(
                     format!("{}.{}", self.file_name, subroutine_dec.subroutine_name),
                     local_length,
                 )));
-                for statement in subroutine_dec.subroutine_body.stmts {
+
+                map_iter(subroutine_dec.subroutine_body.stmts, |statement| {
                     self.compile_statement(statement);
-                }
+                });
+
                 self
             }
             _ => self,
@@ -174,16 +177,16 @@ impl JackToVm {
     }
 
     fn compile_parameter_list(&mut self, parameter_list: Vec<Parameter>) -> &mut Self {
-        for parameter in parameter_list {
+        map_iter(parameter_list, |parameter| {
             self.insert_local(parameter.var_name, parameter.r#type, LocalKind::Arg);
-        }
+        });
         self
     }
 
     fn compile_var_dec(&mut self, var_dec: VarDec) -> &mut Self {
-        for var in var_dec.var_name {
+        map_iter(var_dec.var_name, |var| {
             self.insert_local(var, var_dec.r#type.clone(), LocalKind::Var);
-        }
+        });
         self
     }
 
@@ -206,7 +209,7 @@ impl JackToVm {
                     VarKind::Local(ref l) => match l {
                         LocalKind::Arg => Segment::Argument,
                         LocalKind::Var => Segment::Local,
-                    }
+                    },
                     VarKind::Global(ref g) => match g {
                         GlobalKind::Field => Segment::This,
                         GlobalKind::Static => Segment::Static,
@@ -233,9 +236,11 @@ impl JackToVm {
                     "WHILE_END{}",
                     label
                 ))));
-                for stmt in stmts {
+
+                map_iter(stmts, |stmt| {
                     self.compile_statement(stmt);
-                }
+                });
+
                 self.push(Command::Branch(Branch::Goto(format!("WHILE_EXP{}", label))))
                     .push(Command::Branch(Branch::Label(format!(
                         "WHILE_END{}",
@@ -249,18 +254,18 @@ impl JackToVm {
                     .push(Command::Branch(Branch::Goto(format!("IF_FALSE{}", label))))
                     .push(Command::Branch(Branch::Label(format!("IF_TRUE{}", label))));
 
-                for stmt in s1 {
+                map_iter(s1, |stmt| {
                     self.compile_statement(stmt);
-                }
+                });
 
                 match o_s2 {
-                    None => self.push(Command::Branch(Branch::Label(format!("IF_FALSE{}",label)))),
+                    None => self.push(Command::Branch(Branch::Label(format!("IF_FALSE{}", label)))),
                     Some(s2) => {
                         self.push(Command::Branch(Branch::Goto(format!("IF_END{}", label))))
                             .push(Command::Branch(Branch::Label(format!("IF_FALSE{}", label))));
-                        for stmt in s2 {
+                        map_iter(s2, |stmt| {
                             self.compile_statement(stmt);
-                        }
+                        });
                         self.push(Command::Branch(Branch::Label(format!("IF_END{}", label))))
                     }
                 }
@@ -272,9 +277,9 @@ impl JackToVm {
         match subroutine_call {
             SubroutineCall::Call(subroutine_name, exprs) => {
                 self.push(Command::Stack(Stack::Push(Segment::Pointer, 0)));
-                for expr in exprs {
+                map_iter(exprs, |expr| {
                     self.compile_expression(*expr);
-                }
+                });
                 self.push(Command::Function(Function::Call(
                     format!("{}.{}", self.class_name, subroutine_name),
                     1,
@@ -296,10 +301,11 @@ impl JackToVm {
                     self.push(Command::Stack(Stack::Push(segment, *index)));
 
                     let mut exprs_length = 1;
-                    for expr in exprs {
+
+                    map_iter(exprs, |expr| {
                         self.compile_expression(*expr);
                         exprs_length += 1;
-                    }
+                    });
 
                     self.push(Command::Function(Function::Call(
                         format!("{}.{}", class_name, subroutine_name),
@@ -309,10 +315,10 @@ impl JackToVm {
 
                 _ => {
                     let mut exprs_length = 0;
-                    for expr in exprs {
+                    map_iter(exprs, |expr| {
                         self.compile_expression(*expr);
                         exprs_length += 1;
-                    }
+                    });
                     self.push(Command::Function(Function::Call(
                         format!("{}.{}", name, subroutine_name),
                         exprs_length,
@@ -332,9 +338,10 @@ impl JackToVm {
 
     fn compile_term(&mut self, term: Term) -> &mut Self {
         match term {
-            Term::IntegerConstant(i) => {
-                self.push(Command::Stack(Stack::Push(Segment::Constant, i.try_into().unwrap())))
-            }
+            Term::IntegerConstant(i) => self.push(Command::Stack(Stack::Push(
+                Segment::Constant,
+                i.try_into().unwrap(),
+            ))),
             Term::StringConstant(s) => {
                 let s_length: u16 = s.len().try_into().unwrap();
                 self.push(Command::Stack(Stack::Push(Segment::Constant, s_length)))
@@ -342,14 +349,14 @@ impl JackToVm {
                         "String.new".to_string(),
                         1,
                     )));
-                for c in s.chars() {
+                map_iter(s.chars(), |c| {
                     let char_code = c as u16;
                     self.push(Command::Stack(Stack::Push(Segment::Constant, char_code)))
                         .push(Command::Function(Function::Call(
                             "String.appendChar".to_string(),
                             2,
                         )));
-                }
+                });
                 self
             }
             Term::KeywordConstant(kw) => self.compile_keyword_constant(kw),
@@ -384,10 +391,6 @@ impl JackToVm {
     fn compile_keyword_constant(&mut self, kw: KeywordConstant) -> &mut Self {
         match kw {
             KeywordConstant::False => self.push(Command::Stack(Stack::Push(Segment::Constant, 0))),
-            // Given Jack to VM .bat file interprets `true` as `push constant 0`;`not`
-            // KeywordConstant::True => self
-            //     .push(Command::Stack(Stack::Push(Segment::Constant, 1)))
-            //     .push(Command::ACL(ACL::Arithmetic(Arithmetic::Neg))),
             KeywordConstant::True => self
                 .push(Command::Stack(Stack::Push(Segment::Constant, 0)))
                 .push(Command::ACL(ACL::Logical(Logical::Not))),
@@ -442,4 +445,12 @@ fn var_kind_to_segment(var_kind: VarKind) -> Segment {
             LocalKind::Var => Segment::Local,
         },
     }
+}
+
+fn map_iter<I, F, T>(iter: I, func: F) -> Vec<T>
+where
+    I: IntoIterator,
+    F: FnMut(I::Item) -> T, // FnMut instead of Fn
+{
+    iter.into_iter().map(func).collect()
 }
