@@ -9,9 +9,10 @@ pub struct JackToVm {
     class_name: String,
     global_ctx: HashMap<String, Var>,
     local_ctx: HashMap<String, Var>,
-    global_kind_counts: (i16, i16),
-    local_kind_counts: (i16, i16),
-    label_count: i32,
+    global_kind_counts: (u16, u16),
+    local_kind_counts: (u16, u16),
+    if_count: u16,
+    while_count: u16,
     instruction_stack: Vec<Command>,
 }
 
@@ -24,7 +25,8 @@ impl JackToVm {
             local_ctx: HashMap::new(),
             global_kind_counts: (0, 0), // (field, static)
             local_kind_counts: (0, 0),  // (argument, variable)
-            label_count: 0,
+            if_count: 0,
+            while_count: 0,
             instruction_stack: Vec::new(),
         };
         let ins = compiler.compile_class_dec(class.class_dec);
@@ -70,6 +72,8 @@ impl JackToVm {
         self.local_ctx = HashMap::new();
         self.local_kind_counts.0 = 0;
         self.local_kind_counts.1 = 0;
+        self.if_count = 0;
+        self.while_count = 0;
         self
     }
 
@@ -78,20 +82,26 @@ impl JackToVm {
         self
     }
 
-    fn inc_label(&mut self) -> i32 {
-        let l = self.label_count;
-        self.label_count += 1;
+    fn if_label(&mut self) -> u16 {
+        let l = self.if_count;
+        self.if_count += 1;
         l
     }
 
-    fn get_global_kind_count(&mut self, global_kind: GlobalKind) -> i16 {
+    fn while_label(&mut self) -> u16 {
+        let l = self.while_count;
+        self.while_count += 1;
+        l
+    }
+
+    fn get_global_kind_count(&mut self, global_kind: GlobalKind) -> u16 {
         match global_kind {
             GlobalKind::Field => self.global_kind_counts.0,
             GlobalKind::Static => self.global_kind_counts.1,
         }
     }
 
-    fn get_local_kind_count(&mut self, local_kind: LocalKind) -> i16 {
+    fn get_local_kind_count(&mut self, local_kind: LocalKind) -> u16 {
         match local_kind {
             LocalKind::Arg => self.local_kind_counts.0,
             LocalKind::Var => self.local_kind_counts.1,
@@ -148,7 +158,7 @@ impl JackToVm {
                 let mut local_length = 0;
                 for var_dec in subroutine_dec.subroutine_body.var_decs {
                     self.compile_var_dec(var_dec.clone());
-                    local_length += var_dec.var_name.len() as i16
+                    local_length += var_dec.var_name.len() as u16
                 }
                 self.push(Command::Function(Function::Function(
                     format!("{}.{}", self.file_name, subroutine_dec.subroutine_name),
@@ -193,7 +203,10 @@ impl JackToVm {
             Statement::LetStatement(ident, array, e) => {
                 let var = self.lookup(&ident).expect("Variable not in context");
                 let var_segment = match var.var_kind {
-                    VarKind::Local(_) => Segment::Local,
+                    VarKind::Local(ref l) => match l {
+                        LocalKind::Arg => Segment::Argument,
+                        LocalKind::Var => Segment::Local,
+                    }
                     VarKind::Global(ref g) => match g {
                         GlobalKind::Field => Segment::This,
                         GlobalKind::Static => Segment::Static,
@@ -209,7 +222,7 @@ impl JackToVm {
                 }
             }
             Statement::WhileStatement(expr, stmts) => {
-                let label = self.inc_label();
+                let label = self.while_label();
                 self.push(Command::Branch(Branch::Label(format!(
                     "WHILE_EXP{}",
                     label
@@ -231,7 +244,7 @@ impl JackToVm {
             }
             Statement::IfStatement(e, s1, o_s2) => {
                 self.compile_expression(e);
-                let label = self.inc_label();
+                let label = self.if_label();
                 self.push(Command::Branch(Branch::IfGoto(format!("IF_TRUE{}", label))))
                     .push(Command::Branch(Branch::Goto(format!("IF_FALSE{}", label))))
                     .push(Command::Branch(Branch::Label(format!("IF_TRUE{}", label))));
@@ -239,12 +252,12 @@ impl JackToVm {
                 for stmt in s1 {
                     self.compile_statement(stmt);
                 }
-                self.push(Command::Branch(Branch::Goto(format!("IF_END{}", label))))
-                    .push(Command::Branch(Branch::Label(format!("IF_FALSE{}", label))));
 
                 match o_s2 {
-                    None => self.push(Command::Branch(Branch::Label(format!("IF_END{}", label)))),
+                    None => self.push(Command::Branch(Branch::Label(format!("IF_FALSE{}",label)))),
                     Some(s2) => {
+                        self.push(Command::Branch(Branch::Goto(format!("IF_END{}", label))))
+                            .push(Command::Branch(Branch::Label(format!("IF_FALSE{}", label))));
                         for stmt in s2 {
                             self.compile_statement(stmt);
                         }
@@ -320,17 +333,17 @@ impl JackToVm {
     fn compile_term(&mut self, term: Term) -> &mut Self {
         match term {
             Term::IntegerConstant(i) => {
-                self.push(Command::Stack(Stack::Push(Segment::Constant, i)))
+                self.push(Command::Stack(Stack::Push(Segment::Constant, i.try_into().unwrap())))
             }
             Term::StringConstant(s) => {
-                let s_length: i16 = s.len().try_into().unwrap();
+                let s_length: u16 = s.len().try_into().unwrap();
                 self.push(Command::Stack(Stack::Push(Segment::Constant, s_length)))
                     .push(Command::Function(Function::Call(
                         "String.new".to_string(),
                         1,
                     )));
                 for c in s.chars() {
-                    let char_code = c as i16;
+                    let char_code = c as u16;
                     self.push(Command::Stack(Stack::Push(Segment::Constant, char_code)))
                         .push(Command::Function(Function::Call(
                             "String.appendChar".to_string(),

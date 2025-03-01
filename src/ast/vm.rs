@@ -12,8 +12,8 @@ pub enum Command {
 // Commands that move data
 #[derive(Clone)]
 pub enum Stack {
-    Push(Segment, i16),
-    Pop(Segment, i16),
+    Push(Segment, u16),
+    Pop(Segment, u16),
 }
 
 #[derive(Clone)]
@@ -68,8 +68,8 @@ pub enum Branch {
 // Function commands:
 #[derive(Clone)]
 pub enum Function {
-    Function(String, i16),
-    Call(String, i16),
+    Function(String, u16),
+    Call(String, u16),
     Return,
 }
 
@@ -77,7 +77,7 @@ pub enum Function {
 pub struct Var {
     pub r#type: Type,
     pub var_kind: VarKind,
-    pub index: i16,
+    pub index: u16,
 }
 
 #[derive(Clone)]

@@ -6,3 +6,5 @@
 // tests that validate each step of pretty-printing jack maybe?
 
 // directory stuff
+
+// add more tests for vm stuff, ensure everythign is properly covered
