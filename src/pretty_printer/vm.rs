@@ -19,9 +19,8 @@ impl Command {
         match self {
             Command::Stack(p) => p.as_str(),
             Command::ACL(acl) => acl.as_str(),
-            // Command::Branch(b) => b.as_str(),
             Command::Function(f) => f.as_str(),
-            _ => todo!(),
+            Command::Branch(b) => b.as_str(),
         }
     }
 }
@@ -78,6 +77,16 @@ impl Function {
             Function::Function(s, i) => format!("function {} {}", s, i),
             Function::Call(s, i) => format!("call {} {}", s, i),
             Function::Return => "return".to_string(),
+        }
+    }
+}
+
+impl Branch {
+    fn as_str(&self) -> String {
+        match self {
+            Branch::Label(s) => format!("label {}", s),
+            Branch::Goto(s) => format!("goto {}", s),
+            Branch::IfGoto(s) => format!("if-goto {}", s),
         }
     }
 }

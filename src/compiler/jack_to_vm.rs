@@ -143,31 +143,24 @@ impl JackToVm {
             //     LocalKind::Arg,
             // ),
             SubroutineType::Function => {
-                let parameter_length: i16 = subroutine_dec
-                    .parameter_list
-                    .clone()
-                    .len()
-                    .try_into()
-                    .unwrap();
                 self.compile_parameter_list(subroutine_dec.parameter_list);
+
+                let mut local_length = 0;
+                for var_dec in subroutine_dec.subroutine_body.var_decs {
+                    self.compile_var_dec(var_dec.clone());
+                    local_length += var_dec.var_name.len() as i16
+                }
                 self.push(Command::Function(Function::Function(
                     format!("{}.{}", self.file_name, subroutine_dec.subroutine_name),
-                    parameter_length,
+                    local_length,
                 )));
-                self.compile_subroutine_body(subroutine_dec.subroutine_body)
+                for statement in subroutine_dec.subroutine_body.stmts {
+                    self.compile_statement(statement);
+                }
+                self
             }
             _ => self,
         }
-    }
-
-    fn compile_subroutine_body(&mut self, subroutine_body: SubroutineBody) -> &mut Self {
-        for var_dec in subroutine_body.var_decs {
-            self.compile_var_dec(var_dec);
-        }
-        for statement in subroutine_body.stmts {
-            self.compile_statement(statement);
-        }
-        self
     }
 
     fn compile_parameter_list(&mut self, parameter_list: Vec<Parameter>) -> &mut Self {
@@ -211,18 +204,97 @@ impl JackToVm {
                     None => self
                         .compile_expression(e)
                         .push(Command::Stack(Stack::Pop(var_segment, index))),
+                    // Need to allow for array stuff
                     Some(a) => todo!(),
                 }
             }
-            _ => todo!(),
+            Statement::WhileStatement(expr, stmts) => {
+                let label = self.inc_label();
+                self.push(Command::Branch(Branch::Label(format!(
+                    "WHILE_EXP{}",
+                    label
+                ))))
+                .compile_expression(expr)
+                .compile_unary_op(UnaryOp::Tilde)
+                .push(Command::Branch(Branch::IfGoto(format!(
+                    "WHILE_END{}",
+                    label
+                ))));
+                for stmt in stmts {
+                    self.compile_statement(stmt);
+                }
+                self.push(Command::Branch(Branch::Goto(format!("WHILE_EXP{}", label))))
+                    .push(Command::Branch(Branch::Label(format!(
+                        "WHILE_END{}",
+                        label
+                    ))))
+            }
+            Statement::IfStatement(e, s1, o_s2) => {
+                self.compile_expression(e);
+                let label = self.inc_label();
+                self.push(Command::Branch(Branch::IfGoto(format!("IF_TRUE{}", label))))
+                    .push(Command::Branch(Branch::Goto(format!("IF_FALSE{}", label))))
+                    .push(Command::Branch(Branch::Label(format!("IF_TRUE{}", label))));
+
+                for stmt in s1 {
+                    self.compile_statement(stmt);
+                }
+                self.push(Command::Branch(Branch::Goto(format!("IF_END{}", label))))
+                    .push(Command::Branch(Branch::Label(format!("IF_FALSE{}", label))));
+
+                match o_s2 {
+                    None => self.push(Command::Branch(Branch::Label(format!("IF_END{}", label)))),
+                    Some(s2) => {
+                        for stmt in s2 {
+                            self.compile_statement(stmt);
+                        }
+                        self.push(Command::Branch(Branch::Label(format!("IF_END{}", label))))
+                    }
+                }
+            }
         }
     }
 
     fn compile_subroutine_call(&mut self, subroutine_call: SubroutineCall) -> &mut Self {
         match subroutine_call {
-            SubroutineCall::Call(subroutine_name, exprs) => todo!(),
+            SubroutineCall::Call(subroutine_name, exprs) => {
+                self.push(Command::Stack(Stack::Push(Segment::Pointer, 0)));
+                for expr in exprs {
+                    self.compile_expression(*expr);
+                }
+                self.push(Command::Function(Function::Call(
+                    format!("{}.{}", self.class_name, subroutine_name),
+                    1,
+                )))
+            }
             SubroutineCall::ClassCall(name, subroutine_name, exprs) => match self.lookup(&name) {
-                None => {
+                Some(Var {
+                    r#type: Type::ClassName(c),
+                    var_kind,
+                    index,
+                }) => {
+                    let class_name = c.clone();
+
+                    let segment = match var_kind {
+                        VarKind::Local(LocalKind::Var) => Segment::Local,
+                        _ => Segment::This,
+                    };
+
+                    self.push(Command::Stack(Stack::Push(segment, *index)));
+
+                    let mut exprs_length = 1;
+                    for expr in exprs {
+                        self.compile_expression(*expr);
+                        exprs_length += 1;
+                    }
+
+                    self.push(Command::Function(Function::Call(
+                        format!("{}.{}", class_name, subroutine_name),
+                        exprs_length,
+                    )))
+                }
+
+                _ => {
                     let mut exprs_length = 0;
                     for expr in exprs {
                         self.compile_expression(*expr);
@@ -233,7 +305,6 @@ impl JackToVm {
                         exprs_length,
                     )))
                 }
-                Some(t) => todo!(),
             },
         }
     }
@@ -269,7 +340,28 @@ impl JackToVm {
                 self
             }
             Term::KeywordConstant(kw) => self.compile_keyword_constant(kw),
-            Term::VarName(s, oe) => todo!(),
+            Term::VarName(s, oe) => {
+                let o_var = self.lookup(&s);
+                match o_var {
+                    None => self,
+                    Some(var) => {
+                        let segment = var_kind_to_segment(var.var_kind.clone());
+                        let index = var.index;
+                        match oe {
+                            None => self.push(Command::Stack(Stack::Push(
+                                var_kind_to_segment(var.var_kind.clone()),
+                                var.index,
+                            ))),
+                            Some(e) => self
+                                .compile_expression(*e)
+                                .push(Command::Stack(Stack::Push(segment, index)))
+                                .compile_binary_op(BinaryOp::Plus)
+                                .push(Command::Stack(Stack::Pop(Segment::Pointer, 1)))
+                                .push(Command::Stack(Stack::Push(Segment::That, 0))),
+                        }
+                    }
+                }
+            }
             Term::UnaryTerm(uop, t) => self.compile_term(*t).compile_unary_op(uop),
             Term::ParensExpr(e) => self.compile_expression(*e),
             Term::SubroutineCall(sc) => self.compile_subroutine_call(sc),
@@ -279,8 +371,12 @@ impl JackToVm {
     fn compile_keyword_constant(&mut self, kw: KeywordConstant) -> &mut Self {
         match kw {
             KeywordConstant::False => self.push(Command::Stack(Stack::Push(Segment::Constant, 0))),
+            // Given Jack to VM .bat file interprets `true` as `push constant 0`;`not`
+            // KeywordConstant::True => self
+            //     .push(Command::Stack(Stack::Push(Segment::Constant, 1)))
+            //     .push(Command::ACL(ACL::Arithmetic(Arithmetic::Neg))),
             KeywordConstant::True => self
-                .push(Command::Stack(Stack::Push(Segment::Constant, 1)))
+                .push(Command::Stack(Stack::Push(Segment::Constant, 0)))
                 .push(Command::ACL(ACL::Logical(Logical::Not))),
             KeywordConstant::This => self.push(Command::Stack(Stack::Push(Segment::Pointer, 0))),
             KeywordConstant::Null => self.push(Command::Stack(Stack::Push(Segment::Constant, 0))),
@@ -319,5 +415,18 @@ fn kind_to_global(kind: Kind) -> GlobalKind {
     match kind {
         Kind::Field => GlobalKind::Field,
         Kind::Static => GlobalKind::Static,
+    }
+}
+
+fn var_kind_to_segment(var_kind: VarKind) -> Segment {
+    match var_kind {
+        VarKind::Global(g) => match g {
+            GlobalKind::Field => Segment::This,
+            GlobalKind::Static => Segment::Static,
+        },
+        VarKind::Local(l) => match l {
+            LocalKind::Arg => Segment::Argument,
+            LocalKind::Var => Segment::Local,
+        },
     }
 }

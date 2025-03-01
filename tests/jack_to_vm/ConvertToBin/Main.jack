@@ -1,0 +1,74 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/11/ConvertToBin/Main.jack
+
+/**
+ * Takes a character as input.
+ *
+ * Prints out the binary representation of its integer value,
+ * starting with the least significant bit.
+ * 
+ * The program should be tested as follows:
+ * 1) Load the program into the supplied VM emulator
+ * 2) Run the program
+ * 3) Enter any character
+ * 4) Determine if the displayed binary matches the character ASCII value
+ */
+class Main {
+    
+    function void main() {
+	    var char value;
+        let value = Keyboard.readChar();
+        do Output.println();
+        do Main.convert(value); 
+        return;
+    }
+    
+    function void convert(int value) {
+    	var int mask, position;
+    	var boolean loop;
+    	
+    	let loop = true;
+    	while (loop) {
+    	    let position = position + 1;
+    	    let mask = Main.nextMask(mask);
+    	
+    	    if (~(position > 16)) {
+    	
+    	        if (~((value & mask) = 0)) {
+                    do Output.printInt(1);
+       	        }
+    	        else {
+                    do Output.printInt(0);
+      	        }    
+    	    }
+    	    else {
+    	        let loop = false;
+    	    }
+    	}
+        do Output.println();
+    	return;
+    }
+ 
+    /** Returns the next mask (the mask that should follow the given mask). */
+    function int nextMask(int mask) {
+    	if (mask = 0) {
+    	    return 1;
+    	}
+    	else {
+	    return mask * 2;
+    	}
+    }
+    
+    /** Fills 'length' consecutive memory locations with 'value',
+      * starting at 'startAddress'. */
+    function void fillMemory(int startAddress, int length, int value) {
+        while (length > 0) {
+            do Memory.poke(startAddress, value);
+            let length = length - 1;
+            let startAddress = startAddress + 1;
+        }
+        return;
+    }
+}

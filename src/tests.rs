@@ -1,7 +1,6 @@
 #[cfg(test)]
 mod tests {
     use crate::pretty_printer::jack::PrettyPrint;
-    use crate::pretty_printer::lexer;
 
     fn compare_files(actual: &std::path::Path, expected: &std::path::Path) -> bool {
         let actual_content = std::fs::read_to_string(actual).unwrap();
@@ -164,5 +163,25 @@ mod tests {
     #[test]
     fn test_jack_to_vm_alphashow_main() {
         test_jack_to_vm("tests/jack_to_vm/AlphaShow/Main")
+    }
+
+    #[test]
+    fn test_jack_to_vm_square_main() {
+        test_jack_to_vm("tests/jack_to_vm/Square/Main")
+    }
+
+    #[test]
+    fn test_jack_to_vm_square_square() {
+        test_jack_to_vm("tests/jack_to_vm/Square/Square")
+    }
+
+    #[test]
+    fn test_jack_to_vm_square_squaregame() {
+        test_jack_to_vm("tests/jack_to_vm/Square/SquareGame")
+    }
+
+    #[test]
+    fn test_jack_to_vm_converttobin_main() {
+        test_jack_to_vm("tests/jack_to_vm/ConvertToBin/Main")
     }
 }
