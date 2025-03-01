@@ -11,8 +11,6 @@
 class Main {
 
    function void main() {
-        var int x;
-        let x = 3;
         do Output.printInt(3);
         return;
    }

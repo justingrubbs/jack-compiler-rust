@@ -137,11 +137,11 @@ impl JackToVm {
     fn compile_subroutine_dec(&mut self, subroutine_dec: SubroutineDec) -> &mut Self {
         self.reset_local();
         match subroutine_dec.subroutine_type {
-            SubroutineType::Method => self.insert_local(
-                "this".to_string(),
-                Type::ClassName(self.class_name.to_string()),
-                LocalKind::Arg,
-            ),
+            // SubroutineType::Method => self.insert_local(
+            //     "this".to_string(),
+            //     Type::ClassName(self.class_name.to_string()),
+            //     LocalKind::Arg,
+            // ),
             SubroutineType::Function => {
                 let parameter_length: i16 = subroutine_dec
                     .parameter_list
@@ -154,16 +154,20 @@ impl JackToVm {
                     format!("{}.{}", self.file_name, subroutine_dec.subroutine_name),
                     parameter_length,
                 )));
-                for var_dec in subroutine_dec.subroutine_body.var_decs {
-                    self.compile_var_dec(var_dec);
-                }
-                for statement in subroutine_dec.subroutine_body.stmts {
-                    self.compile_statement(statement);
-                }
-                self
+                self.compile_subroutine_body(subroutine_dec.subroutine_body)
             }
             _ => self,
         }
+    }
+
+    fn compile_subroutine_body(&mut self, subroutine_body: SubroutineBody) -> &mut Self {
+        for var_dec in subroutine_body.var_decs {
+            self.compile_var_dec(var_dec);
+        }
+        for statement in subroutine_body.stmts {
+            self.compile_statement(statement);
+        }
+        self
     }
 
     fn compile_parameter_list(&mut self, parameter_list: Vec<Parameter>) -> &mut Self {
@@ -174,8 +178,10 @@ impl JackToVm {
     }
 
     fn compile_var_dec(&mut self, var_dec: VarDec) -> &mut Self {
-        // Needs to take in a VarKind for hwen inserting
-        todo!()
+        for var in var_dec.var_name {
+            self.insert_local(var, var_dec.r#type.clone(), LocalKind::Var);
+        }
+        self
     }
 
     fn compile_statement(&mut self, statement: Statement) -> &mut Self {
