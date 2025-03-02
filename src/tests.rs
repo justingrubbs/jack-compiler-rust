@@ -184,4 +184,9 @@ mod tests {
     fn test_jack_to_vm_converttobin_main() {
         test_jack_to_vm("tests/jack_to_vm/ConvertToBin/Main")
     }
+
+    #[test]
+    fn test_jack_to_vm_arraytest_main() {
+        test_jack_to_vm("tests/jack_to_vm/ArrayTest/Main")
+    }
 }
