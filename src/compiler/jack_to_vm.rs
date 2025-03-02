@@ -160,8 +160,8 @@ impl JackToVm {
     ) -> &mut Self {
         let mut local_length = 0;
         var_decs.into_iter().for_each(|var_dec| {
-            self.compile_var_dec(var_dec.clone());
             local_length += var_dec.var_name.len() as u16;
+            self.compile_var_dec(var_dec);
         });
         self.push(Command::Function(Function::Function(
             format!("{}.{}", self.file_name, subroutine_name),

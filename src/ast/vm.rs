@@ -1,4 +1,4 @@
-use crate::ast::jack::{Kind, Type};
+use crate::ast::jack::Type;
 
 // Virtual machine commands
 #[derive(Clone)]
