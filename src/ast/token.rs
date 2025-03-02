@@ -9,6 +9,7 @@ pub enum Token {
     Identifier(String), // sequence of letters, digits, and underscore, not starting with digit
 }
 
+#[repr(u8)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Keyword {
     Class,
@@ -34,6 +35,7 @@ pub enum Keyword {
     Return,
 }
 
+#[repr(u8)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Symbol {
     LCurly,

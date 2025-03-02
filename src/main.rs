@@ -1,17 +1,19 @@
 mod ast {
-    pub mod jack;
     pub mod token;
+    pub mod jack;
     pub mod vm;
+    pub mod asm;
 }
 mod compiler {
-    pub mod jack_to_vm;
     pub mod lexer;
     pub mod parser;
+    pub mod jack_to_vm;
 }
 mod pretty_printer {
-    pub mod jack;
     pub mod lexer;
+    pub mod jack;
     pub mod vm;
+    pub mod asm;
 }
 mod tests;
 

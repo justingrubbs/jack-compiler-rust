@@ -16,6 +16,7 @@ pub enum Stack {
     Pop(Segment, u16),
 }
 
+#[repr(u8)]
 #[derive(Clone)]
 pub enum Segment {
     Argument,
@@ -36,6 +37,7 @@ pub enum ACL {
     Logical(Logical),
 }
 
+#[repr(u8)]
 #[derive(Clone)]
 pub enum Arithmetic {
     Add,
@@ -43,6 +45,7 @@ pub enum Arithmetic {
     Neg,
 }
 
+#[repr(u8)]
 #[derive(Clone)]
 pub enum Comparison {
     Eq,
@@ -50,6 +53,7 @@ pub enum Comparison {
     Lt,
 }
 
+#[repr(u8)]
 #[derive(Clone)]
 pub enum Logical {
     And,
@@ -80,18 +84,21 @@ pub struct Var {
     pub index: u16,
 }
 
+#[repr(u8)]
 #[derive(Clone)]
 pub enum VarKind {
     Global(GlobalKind),
     Local(LocalKind),
 }
 
+#[repr(u8)]
 #[derive(Clone)]
 pub enum GlobalKind {
     Static,
     Field,
 }
 
+#[repr(u8)]
 #[derive(Clone)]
 pub enum LocalKind {
     Arg,

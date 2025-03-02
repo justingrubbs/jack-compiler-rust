@@ -17,6 +17,7 @@ pub struct ClassVarDec {
     pub vars: Vec<String>,
 }
 
+#[repr(u8)]
 #[derive(Clone)]
 pub enum Kind {
     Static,
@@ -39,6 +40,7 @@ pub struct SubroutineDec {
     pub subroutine_body: SubroutineBody,
 }
 
+#[repr(u8)]
 #[derive(Clone)]
 pub enum SubroutineType {
     Constructor,
@@ -102,6 +104,7 @@ pub enum SubroutineCall {
     ClassCall(String, String, Vec<Box<Expression>>),
 }
 
+#[repr(u8)]
 #[derive(Clone)]
 pub enum BinaryOp {
     Plus,
@@ -115,12 +118,14 @@ pub enum BinaryOp {
     Equal,
 }
 
+#[repr(u8)]
 #[derive(Clone)]
 pub enum UnaryOp {
     Negation,
     Tilde,
 }
 
+#[repr(u8)]
 #[derive(Clone)]
 pub enum KeywordConstant {
     True,
