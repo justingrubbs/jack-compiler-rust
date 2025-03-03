@@ -8,6 +8,7 @@ mod compiler {
     pub mod lexer;
     pub mod parser;
     pub mod jack_to_vm;
+    pub mod vm_to_asm;
 }
 mod pretty_printer {
     pub mod lexer;
