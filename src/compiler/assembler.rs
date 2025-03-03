@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use std::mem::take;
 
 pub struct Assembler {
-    ctx: HashMap<String, u32>,
-    index: u32,
+    ctx: HashMap<String, u16>,
+    index: u16,
     hack_stack: Vec<String>,
 }
 
@@ -26,13 +26,13 @@ impl Assembler {
         let mut i = 0;
         for assembly in assembly_stack {
             match assembly {
-                Assembly::Label(l) => self.insert(l.to_string(), i + 1),
+                Assembly::Label(l) => self.insert(l.to_string(), i),
                 _ => i += 1,
             }
         }
     }
 
-    fn lookup(&mut self, name: String) -> u32 {
+    fn lookup(&mut self, name: String) -> u16 {
         match self.ctx.get(&name) {
             Some(i) => *i,
             None => {
@@ -44,7 +44,7 @@ impl Assembler {
         }
     }
 
-    fn insert(&mut self, name: String, i: u32) {
+    fn insert(&mut self, name: String, i: u16) {
         self.ctx.insert(name, i);
     }
 
@@ -52,7 +52,7 @@ impl Assembler {
         self.hack_stack.push(hack);
     }
 
-    fn label(&mut self) -> u32 {
+    fn label(&mut self) -> u16 {
         let i = self.index;
         self.index += 1;
         i
@@ -84,11 +84,14 @@ impl Assembler {
                     self.push_hack(format!("{}", binary))
                 }
             }
-            AInstruction::Symbol(s) => todo!(),
+            AInstruction::Symbol(s) => {
+                let new = self.compile_a_symbol(s);
+                self.compile_a_instruction(AInstruction::Constant(new))
+            },
         }
     }
 
-    fn compile_a_symbol(&mut self, var: String) -> u32 {
+    fn compile_a_symbol(&mut self, var: String) -> u16 {
         match var.as_str() {
             "SCREEN" => 16384,
             "KBD" => 24576,
