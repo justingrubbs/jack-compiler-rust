@@ -30,6 +30,7 @@ pub enum Segment {
 }
 
 // Arithemtic-Logical commands
+#[repr(u8)]
 #[derive(Clone)]
 pub enum ACL {
     Arithmetic(Arithmetic),
