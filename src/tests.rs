@@ -189,4 +189,50 @@ mod tests {
     fn test_jack_to_vm_arraytest_main() {
         test_jack_to_vm("tests/jack_to_vm/ArrayTest/Main")
     }
+
+
+
+
+    fn test_assembler(file: &str, asm: Vec<crate::ast::asm::Assembly>) {
+        let exp_path: String = format!("{}Exp.hack", file); // Create a new String
+        let act_path: String = format!("{}Act.hack", file); // Create a new String
+
+        let hack = crate::compiler::assembler::Assembler::assemble(asm);
+        let hack_string = hack.join("\n") + "\n";
+        std::fs::write(act_path.clone(), hack_string);
+        let actual = std::path::Path::new(&act_path);
+        let expected = std::path::Path::new(&exp_path);
+        assert!(
+            compare_files(actual, expected),
+            "{} and {} do not match",
+            act_path,
+            exp_path
+        )
+        }
+
+    #[test]
+    fn test_assembler_add_add() {
+        let asm = vec![
+            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Constant(2)),
+            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
+                comp: crate::ast::asm::Comp::A,
+                o_dest: Some(crate::ast::asm::Dest::D),
+                o_jump: None,
+            }),
+            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Constant(3)),
+            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
+                comp: crate::ast::asm::Comp::DPlusA,
+                o_dest: Some(crate::ast::asm::Dest::D),
+                o_jump: None,
+            }),
+            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Constant(0)),
+            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
+                comp: crate::ast::asm::Comp::D,
+                o_dest: Some(crate::ast::asm::Dest::M),
+                o_jump: None,
+            }),
+        ];
+        test_assembler("tests/assembler/Add/Add",asm)
+    }
+
 }
