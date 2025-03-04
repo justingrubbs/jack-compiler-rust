@@ -17,6 +17,9 @@ mod pretty_printer {
     pub mod vm;
     pub mod asm;
 }
+mod misc {
+    pub mod asm_parser;
+}
 mod tests;
 
 use std::env;
