@@ -316,4 +316,105 @@ mod tests {
     fn test_assembler_rect_rectl() {
         test_assembler("tests/assembler/rect/RectL")
     }
+
+    // Testing vm_parser:
+    // ----------------------------------------------------------------------------
+    // We modify the file extensions as other tests 
+    // will be grabbing all `.vm` files in directory.
+    fn test_vm_parser(file: &str) {
+        let vm_path: String = format!("{}.vm", file); // Create a new String
+        let act_path: String = format!("{}.avm", file); // Create a new String
+        let exp_path: String = format!("{}.evm", file); // Create a new String
+
+        let r_commands = crate::parse_vm_file(&vm_path);
+        match r_commands {
+            Ok(commands) => {
+                let vm_string = crate::pretty_printer::vm::print_vm(commands);
+                std::fs::write(act_path.clone(), vm_string);
+                let actual = std::path::Path::new(&act_path);
+                let expected = std::path::Path::new(&exp_path);
+                assert!(
+                    compare_files(actual, expected),
+                    "{} and {} do not match",
+                    act_path,
+                    exp_path
+                )
+            }
+            Err(e) => {
+                eprintln!("Error tokenizing {}: {:?}", vm_path, e);
+                panic!("Failed to tokenize Jack file: {}", vm_path);
+            }
+        }
+    }
+
+    #[test]
+    fn test_vm_parser_vm_to_asm_simpleadd_simpleadd() {
+        test_vm_parser("tests/vm_to_asm/SimpleAdd/SimpleAdd")
+    }
+
+    #[test]
+    fn test_vm_parser_vm_to_asm_basicloop_basicloop() { 
+        test_vm_parser("tests/vm_to_asm/BasicLoop/BasicLoop")
+    }
+
+    #[test]
+    fn test_vm_parser_vm_to_asm_basictest_basictest() {
+        test_vm_parser("tests/vm_to_asm/BasicTest/BasicTest")
+    }
+
+    #[test]
+    fn test_vm_parser_vm_to_asm_fibonaccielement_main() {
+        test_vm_parser("tests/vm_to_asm/FibonacciElement/Main")
+    }
+
+    #[test]
+    fn test_vm_parser_vm_to_asm_fibonaccielement_sys() {
+        test_vm_parser("tests/vm_to_asm/FibonacciElement/Sys")
+    }
+    
+    #[test]
+    fn test_vm_parser_vm_to_asm_fibonacciseries_fibonacciseries() {
+        test_vm_parser("tests/vm_to_asm/FibonacciSeries/FibonacciSeries")
+    }
+
+    #[test]
+    fn test_vm_parser_vm_to_asm_nestedcall_sys() {
+        test_vm_parser("tests/vm_to_asm/NestedCall/Sys")
+    }
+
+    #[test]
+    fn test_vm_parser_vm_to_asm_pointertest_pointertest() {
+        test_vm_parser("tests/vm_to_asm/PointerTest/PointerTest")
+    }
+
+    #[test]
+    fn test_vm_parser_vm_to_asm_simplefunction_simplefunction() {
+        test_vm_parser("tests/vm_to_asm/SimpleFunction/SimpleFunction")
+    }
+
+    #[test]
+    fn test_vm_parser_vm_to_asm_stacktest_stacktest() {
+        test_vm_parser("tests/vm_to_asm/StackTest/StackTest")
+    }
+
+    #[test]
+    fn test_vm_parser_vm_to_asm_staticstest_class1() {
+        test_vm_parser("tests/vm_to_asm/StaticsTest/Class1")
+    }
+
+    #[test]
+    fn test_vm_parser_vm_to_asm_staticstest_class2() {
+        test_vm_parser("tests/vm_to_asm/StaticsTest/Class2")
+    }
+
+    #[test]
+    fn test_vm_parser_vm_to_asm_staticstest_sys() {
+        test_vm_parser("tests/vm_to_asm/StaticsTest/Sys")
+    }
+
+    #[test]
+    fn test_vm_parser_vm_to_asm_statictest_statictest() {
+        test_vm_parser("tests/vm_to_asm/StaticTest/StaticTest")
+    }
+
 }

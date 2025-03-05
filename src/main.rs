@@ -19,6 +19,7 @@ mod pretty_printer {
 }
 mod test {
     pub mod asm_parser;
+    pub mod vm_parser;
     pub mod tests;
 }
 
@@ -107,4 +108,12 @@ pub fn parse_asm_file(file_path: &str) -> Result<Vec<crate::ast::asm::Assembly>,
 pub fn assembler(file_path: &str) -> Result<Vec<String>, Error> {
     parse_asm_file(file_path)
         .map(|v_asm| crate::compiler::assembler::Assembler::assemble(v_asm))
+}
+
+// Will need to be re-written to take a directory or file
+pub fn parse_vm_file(file_path: &str) -> Result<Vec<crate::ast::vm::Command>, Error> {
+    let contents = fs::read_to_string(file_path)?;
+    crate::test::vm_parser::parse_vm()
+        .parse(contents)
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)))
 }
