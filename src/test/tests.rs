@@ -319,7 +319,7 @@ mod tests {
 
     // Testing vm_parser:
     // ----------------------------------------------------------------------------
-    // We modify the file extensions as other tests 
+    // We modify the file extensions as other tests
     // will be grabbing all `.vm` files in directory.
     fn test_vm_parser(file: &str) {
         let vm_path: String = format!("{}.vm", file); // Create a new String
@@ -353,7 +353,7 @@ mod tests {
     }
 
     #[test]
-    fn test_vm_parser_vm_to_asm_basicloop_basicloop() { 
+    fn test_vm_parser_vm_to_asm_basicloop_basicloop() {
         test_vm_parser("tests/vm_to_asm/BasicLoop/BasicLoop")
     }
 
@@ -371,7 +371,7 @@ mod tests {
     fn test_vm_parser_vm_to_asm_fibonaccielement_sys() {
         test_vm_parser("tests/vm_to_asm/FibonacciElement/Sys")
     }
-    
+
     #[test]
     fn test_vm_parser_vm_to_asm_fibonacciseries_fibonacciseries() {
         test_vm_parser("tests/vm_to_asm/FibonacciSeries/FibonacciSeries")
@@ -416,5 +416,4 @@ mod tests {
     fn test_vm_parser_vm_to_asm_statictest_statictest() {
         test_vm_parser("tests/vm_to_asm/StaticTest/StaticTest")
     }
-
 }

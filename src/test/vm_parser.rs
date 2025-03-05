@@ -116,7 +116,7 @@ fn parse_num() -> impl Parser<char, u16, Error = Simple<char>> {
 // Refine as needed
 fn parse_identifier() -> impl Parser<char, String, Error = Simple<char>> {
     let starting_char = filter(|&c: &char| c.is_alphabetic() || c == '_');
-    let next_char = filter(|&c: &char| c.is_alphanumeric() || c == '_' || c == '.' || c == '$');
+    let next_char = filter(|&c: &char| c.is_alphanumeric() || c == '_' || c == '.');
 
     starting_char
         .chain(next_char.repeated())

@@ -87,7 +87,7 @@ impl Assembler {
             AInstruction::Symbol(s) => {
                 let new = self.compile_a_symbol(s);
                 self.compile_a_instruction(AInstruction::Constant(new))
-            },
+            }
         }
     }
 

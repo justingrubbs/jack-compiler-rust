@@ -22,7 +22,6 @@ impl VmToAsm {
         take(&mut asm.assembly_stack)
     }
 
-
     fn compile_commands(&mut self, commands: Vec<Command>) -> &mut Self {
         commands.into_iter().for_each(|command| {
             self.compile_command(command);
@@ -33,13 +32,12 @@ impl VmToAsm {
     fn compile_command(&mut self, command: Command) -> &mut Self {
         match command {
             Command::Stack(s) => match s {
-                Stack::Push(s,i) => todo!(),
-                Stack::Pop(s,i) => todo!(),
+                Stack::Push(s, i) => todo!(),
+                Stack::Pop(s, i) => todo!(),
             },
             Command::ACL(acl) => todo!(),
             Command::Function(f) => todo!(),
             Command::Branch(b) => todo!(),
         }
     }
-
 }
