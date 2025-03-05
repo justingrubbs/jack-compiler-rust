@@ -90,6 +90,14 @@ impl JackToVm {
         self.push(Command::ACL(acl))
     }
 
+    fn push_branch(&mut self, branch: Branch) -> &mut Self {
+        self.push(Command::Branch(branch))
+    }
+
+    fn push_func(&mut self, func: Function) -> &mut Self {
+        self.push(Command::Function(func))
+    }
+
     fn if_label(&mut self) -> u16 {
         let l = self.if_count;
         self.if_count += 1;
@@ -163,13 +171,13 @@ impl JackToVm {
             local_length += var_dec.var_name.len() as u16;
             self.compile_var_dec(var_dec);
         });
-        self.push(Command::Function(Function::Function(
+        self.push_func(Function::Function(
             format!("{}.{}", self.file_name, subroutine_name),
             local_length,
-        )));
+        ));
         if bool {
-            self.push(Command::Stack(Stack::Push(Segment::Argument, 0)))
-                .push(Command::Stack(Stack::Pop(Segment::Pointer, 0)))
+            self.push_stack(Stack::Push(Segment::Argument, 0))
+                .push_stack(Stack::Pop(Segment::Pointer, 0))
         } else {
             self
         }
@@ -207,12 +215,9 @@ impl JackToVm {
                         subroutine_dec.subroutine_name,
                     );
                 let i = self.get_global_kind_count(GlobalKind::Field);
-                self.push(Command::Stack(Stack::Push(Segment::Constant, i)))
-                    .push(Command::Function(Function::Call(
-                        "Memory.alloc".to_string(),
-                        1,
-                    )))
-                    .push(Command::Stack(Stack::Pop(Segment::Pointer, 0)));
+                self.push_stack(Stack::Push(Segment::Constant, i))
+                    .push_func(Function::Call("Memory.alloc".to_string(), 1))
+                    .push_stack(Stack::Pop(Segment::Pointer, 0));
             }
         }
         subroutine_dec
@@ -242,16 +247,14 @@ impl JackToVm {
     fn compile_statement(&mut self, statement: Statement) -> &mut Self {
         match statement {
             Statement::ReturnStatement(or) => match or {
-                Some(r) => self
-                    .compile_expression(r)
-                    .push(Command::Function(Function::Return)),
+                Some(r) => self.compile_expression(r).push_func(Function::Return),
                 None => self
-                    .push(Command::Stack(Stack::Push(Segment::Constant, 0)))
-                    .push(Command::Function(Function::Return)),
+                    .push_stack(Stack::Push(Segment::Constant, 0))
+                    .push_func(Function::Return),
             },
             Statement::DoStatement(sc) => self
                 .compile_subroutine_call(sc)
-                .push(Command::Stack(Stack::Pop(Segment::Temp, 0))),
+                .push_stack(Stack::Pop(Segment::Temp, 0)),
             Statement::LetStatement(ident, array, e) => {
                 let var = self.lookup(&ident).expect("Variable not in context");
                 let var_segment = var_kind_to_segment(var.var_kind.clone());
@@ -259,61 +262,52 @@ impl JackToVm {
                 match array {
                     None => self
                         .compile_expression(e)
-                        .push(Command::Stack(Stack::Pop(var_segment, index))),
+                        .push_stack(Stack::Pop(var_segment, index)),
                     Some(e2) => self
                         .compile_expression(e2)
-                        .push(Command::Stack(Stack::Push(var_segment, index)))
+                        .push_stack(Stack::Push(var_segment, index))
                         .compile_binary_op(BinaryOp::Plus)
                         .compile_expression(e)
-                        .push(Command::Stack(Stack::Pop(Segment::Temp, 0)))
-                        .push(Command::Stack(Stack::Pop(Segment::Pointer, 1)))
-                        .push(Command::Stack(Stack::Push(Segment::Temp, 0)))
-                        .push(Command::Stack(Stack::Pop(Segment::That, 0))),
+                        .push_stack(Stack::Pop(Segment::Temp, 0))
+                        .push_stack(Stack::Pop(Segment::Pointer, 1))
+                        .push_stack(Stack::Push(Segment::Temp, 0))
+                        .push_stack(Stack::Pop(Segment::That, 0)),
                 }
             }
             Statement::WhileStatement(expr, stmts) => {
                 let label = self.while_label();
-                self.push(Command::Branch(Branch::Label(format!(
-                    "WHILE_EXP{}",
-                    label
-                ))))
-                .compile_expression(expr)
-                .compile_unary_op(UnaryOp::Tilde)
-                .push(Command::Branch(Branch::IfGoto(format!(
-                    "WHILE_END{}",
-                    label
-                ))));
+                self.push_branch(Branch::Label(format!("WHILE_EXP{}", label)))
+                    .compile_expression(expr)
+                    .compile_unary_op(UnaryOp::Tilde)
+                    .push_branch(Branch::IfGoto(format!("WHILE_END{}", label)));
 
                 stmts.into_iter().for_each(|stmt| {
                     self.compile_statement(stmt);
                 });
 
-                self.push(Command::Branch(Branch::Goto(format!("WHILE_EXP{}", label))))
-                    .push(Command::Branch(Branch::Label(format!(
-                        "WHILE_END{}",
-                        label
-                    ))))
+                self.push_branch(Branch::Goto(format!("WHILE_EXP{}", label)))
+                    .push_branch(Branch::Label(format!("WHILE_END{}", label)))
             }
             Statement::IfStatement(e, s1, o_s2) => {
                 self.compile_expression(e);
                 let label = self.if_label();
-                self.push(Command::Branch(Branch::IfGoto(format!("IF_TRUE{}", label))))
-                    .push(Command::Branch(Branch::Goto(format!("IF_FALSE{}", label))))
-                    .push(Command::Branch(Branch::Label(format!("IF_TRUE{}", label))));
+                self.push_branch(Branch::IfGoto(format!("IF_TRUE{}", label)))
+                    .push_branch(Branch::Goto(format!("IF_FALSE{}", label)))
+                    .push_branch(Branch::Label(format!("IF_TRUE{}", label)));
 
                 s1.into_iter().for_each(|stmt| {
                     self.compile_statement(stmt);
                 });
 
                 match o_s2 {
-                    None => self.push(Command::Branch(Branch::Label(format!("IF_FALSE{}", label)))),
+                    None => self.push_branch(Branch::Label(format!("IF_FALSE{}", label))),
                     Some(s2) => {
-                        self.push(Command::Branch(Branch::Goto(format!("IF_END{}", label))))
-                            .push(Command::Branch(Branch::Label(format!("IF_FALSE{}", label))));
+                        self.push_branch(Branch::Goto(format!("IF_END{}", label)))
+                            .push_branch(Branch::Label(format!("IF_FALSE{}", label)));
                         s2.into_iter().for_each(|stmt| {
                             self.compile_statement(stmt);
                         });
-                        self.push(Command::Branch(Branch::Label(format!("IF_END{}", label))))
+                        self.push_branch(Branch::Label(format!("IF_END{}", label)))
                     }
                 }
             }
@@ -323,14 +317,14 @@ impl JackToVm {
     fn compile_subroutine_call(&mut self, subroutine_call: SubroutineCall) -> &mut Self {
         match subroutine_call {
             SubroutineCall::Call(subroutine_name, exprs) => {
-                self.push(Command::Stack(Stack::Push(Segment::Pointer, 0)));
+                self.push_stack(Stack::Push(Segment::Pointer, 0));
                 exprs.into_iter().for_each(|expr| {
                     self.compile_expression(*expr);
                 });
-                self.push(Command::Function(Function::Call(
+                self.push_func(Function::Call(
                     format!("{}.{}", self.class_name, subroutine_name),
                     1,
-                )))
+                ))
             }
             SubroutineCall::ClassCall(name, subroutine_name, exprs) => match self.lookup(&name) {
                 Some(Var {
@@ -345,7 +339,7 @@ impl JackToVm {
                         _ => Segment::This,
                     };
 
-                    self.push(Command::Stack(Stack::Push(segment, *index)));
+                    self.push_stack(Stack::Push(segment, *index));
 
                     let mut exprs_length = 1;
 
@@ -354,10 +348,10 @@ impl JackToVm {
                         exprs_length += 1;
                     });
 
-                    self.push(Command::Function(Function::Call(
+                    self.push_func(Function::Call(
                         format!("{}.{}", class_name, subroutine_name),
                         exprs_length,
-                    )))
+                    ))
                 }
 
                 _ => {
@@ -366,10 +360,10 @@ impl JackToVm {
                         self.compile_expression(*expr);
                         exprs_length += 1;
                     });
-                    self.push(Command::Function(Function::Call(
+                    self.push_func(Function::Call(
                         format!("{}.{}", name, subroutine_name),
                         exprs_length,
-                    )))
+                    ))
                 }
             },
         }
@@ -385,24 +379,17 @@ impl JackToVm {
 
     fn compile_term(&mut self, term: Term) -> &mut Self {
         match term {
-            Term::IntegerConstant(i) => self.push(Command::Stack(Stack::Push(
-                Segment::Constant,
-                i.try_into().unwrap(),
-            ))),
+            Term::IntegerConstant(i) => {
+                self.push_stack(Stack::Push(Segment::Constant, i.try_into().unwrap()))
+            }
             Term::StringConstant(s) => {
                 let s_length: u16 = s.len().try_into().unwrap();
-                self.push(Command::Stack(Stack::Push(Segment::Constant, s_length)))
-                    .push(Command::Function(Function::Call(
-                        "String.new".to_string(),
-                        1,
-                    )));
+                self.push_stack(Stack::Push(Segment::Constant, s_length))
+                    .push_func(Function::Call("String.new".to_string(), 1));
                 s.chars().into_iter().for_each(|c| {
                     let char_code = c as u16;
-                    self.push(Command::Stack(Stack::Push(Segment::Constant, char_code)))
-                        .push(Command::Function(Function::Call(
-                            "String.appendChar".to_string(),
-                            2,
-                        )));
+                    self.push_stack(Stack::Push(Segment::Constant, char_code))
+                        .push_func(Function::Call("String.appendChar".to_string(), 2));
                 });
                 self
             }
@@ -415,16 +402,16 @@ impl JackToVm {
                         let segment = var_kind_to_segment(var.var_kind.clone());
                         let index = var.index;
                         match oe {
-                            None => self.push(Command::Stack(Stack::Push(
+                            None => self.push_stack(Stack::Push(
                                 var_kind_to_segment(var.var_kind.clone()),
                                 var.index,
-                            ))),
+                            )),
                             Some(e) => self
                                 .compile_expression(*e)
-                                .push(Command::Stack(Stack::Push(segment, index)))
+                                .push_stack(Stack::Push(segment, index))
                                 .compile_binary_op(BinaryOp::Plus)
-                                .push(Command::Stack(Stack::Pop(Segment::Pointer, 1)))
-                                .push(Command::Stack(Stack::Push(Segment::That, 0))),
+                                .push_stack(Stack::Pop(Segment::Pointer, 1))
+                                .push_stack(Stack::Push(Segment::That, 0)),
                         }
                     }
                 }
@@ -437,39 +424,33 @@ impl JackToVm {
 
     fn compile_keyword_constant(&mut self, kw: KeywordConstant) -> &mut Self {
         match kw {
-            KeywordConstant::False => self.push(Command::Stack(Stack::Push(Segment::Constant, 0))),
+            KeywordConstant::False => self.push_stack(Stack::Push(Segment::Constant, 0)),
             KeywordConstant::True => self
-                .push(Command::Stack(Stack::Push(Segment::Constant, 0)))
-                .push(Command::ACL(ACL::Logical(Logical::Not))),
-            KeywordConstant::This => self.push(Command::Stack(Stack::Push(Segment::Pointer, 0))),
-            KeywordConstant::Null => self.push(Command::Stack(Stack::Push(Segment::Constant, 0))),
+                .push_stack(Stack::Push(Segment::Constant, 0))
+                .push_acl(ACL::Logical(Logical::Not)),
+            KeywordConstant::This => self.push_stack(Stack::Push(Segment::Pointer, 0)),
+            KeywordConstant::Null => self.push_stack(Stack::Push(Segment::Constant, 0)),
         }
     }
 
     fn compile_binary_op(&mut self, op: BinaryOp) -> &mut Self {
         match op {
-            BinaryOp::Plus => self.push(Command::ACL(ACL::Arithmetic(Arithmetic::Add))),
-            BinaryOp::Minus => self.push(Command::ACL(ACL::Arithmetic(Arithmetic::Sub))),
-            BinaryOp::Times => self.push(Command::Function(Function::Call(
-                "Math.multiply".to_string(),
-                2,
-            ))),
-            BinaryOp::Div => self.push(Command::Function(Function::Call(
-                "Math.divide".to_string(),
-                2,
-            ))),
-            BinaryOp::And => self.push(Command::ACL(ACL::Logical(Logical::And))),
-            BinaryOp::Or => self.push(Command::ACL(ACL::Logical(Logical::Or))),
-            BinaryOp::Lesser => self.push(Command::ACL(ACL::Comparison(Comparison::Lt))),
-            BinaryOp::Greater => self.push(Command::ACL(ACL::Comparison(Comparison::Gt))),
-            BinaryOp::Equal => self.push(Command::ACL(ACL::Comparison(Comparison::Eq))),
+            BinaryOp::Plus => self.push_acl(ACL::Arithmetic(Arithmetic::Add)),
+            BinaryOp::Minus => self.push_acl(ACL::Arithmetic(Arithmetic::Sub)),
+            BinaryOp::Times => self.push_func(Function::Call("Math.multiply".to_string(), 2)),
+            BinaryOp::Div => self.push_func(Function::Call("Math.divide".to_string(), 2)),
+            BinaryOp::And => self.push_acl(ACL::Logical(Logical::And)),
+            BinaryOp::Or => self.push_acl(ACL::Logical(Logical::Or)),
+            BinaryOp::Lesser => self.push_acl(ACL::Comparison(Comparison::Lt)),
+            BinaryOp::Greater => self.push_acl(ACL::Comparison(Comparison::Gt)),
+            BinaryOp::Equal => self.push_acl(ACL::Comparison(Comparison::Eq)),
         }
     }
 
     fn compile_unary_op(&mut self, op: UnaryOp) -> &mut Self {
         match op {
-            UnaryOp::Negation => self.push(Command::ACL(ACL::Arithmetic(Arithmetic::Neg))),
-            UnaryOp::Tilde => self.push(Command::ACL(ACL::Logical(Logical::Not))),
+            UnaryOp::Negation => self.push_acl(ACL::Arithmetic(Arithmetic::Neg)),
+            UnaryOp::Tilde => self.push_acl(ACL::Logical(Logical::Not)),
         }
     }
 }
