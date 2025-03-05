@@ -10,34 +10,78 @@ pub fn parse_assembly() -> impl Parser<char, Vec<Assembly>, Error = Simple<char>
 }
 
 fn parse_comment() -> impl Parser<char, (), Error = Simple<char>> {
-    let single_line_comment = just("//")
+    just("//")
         .then_ignore(filter(|&c| c != '\n').repeated())
-        .padded();
-
-    // let multi_line_comment = just("/*").then_ignore(take_until(just("*/"))).padded();
-
-    // let api_comment = just("/**").then_ignore(take_until(just("*/"))).padded();
-    single_line_comment.ignored()
-    // choice((single_line_comment, multi_line_comment, api_comment)).ignored()
+        .padded()
+        .ignored()
 }
 
 fn parse_asm() -> impl Parser<char, Assembly, Error = Simple<char>> {
     choice((
         parse_a_instruction().map(Assembly::A),
+        parse_c_instruction().map(Assembly::C),
         parse_label().map(Assembly::Label),
     ))
 }
 
 fn parse_a_instruction() -> impl Parser<char, AInstruction, Error = Simple<char>> {
-    just("@").ignore_then(choice((
-        parse_num().map(AInstruction::Constant),
-        parse_identifier().map(AInstruction::Symbol),
-    )))
+    just("@")
+        .ignore_then(choice((
+            parse_num().map(AInstruction::Constant),
+            parse_identifier().map(AInstruction::Symbol),
+        )))
+        .padded()
 }
 
-// fn parse_c_instruction() -> impl Parser<char, CInstruction, Error = Simple<char>> {
+fn parse_c_instruction() -> impl Parser<char, CInstruction, Error = Simple<char>> {
+    parse_dest()
+        .then_ignore(just("="))
+        .or_not()
+        .then(parse_comp())
+        .then(just(";").ignore_then(parse_jump().or_not()))
+        .map(|((o_dest, comp), o_jump)| CInstruction {
+            o_dest,
+            comp,
+            o_jump,
+        })
+        .padded()
+}
 
-// }
+fn parse_comp() -> impl Parser<char, Comp, Error = Simple<char>> {
+    let a_0 = choice((
+        just("0").to(Comp::Zero),
+        just("1").to(Comp::One),
+        just("-1").to(Comp::NegOne),
+        just("D").to(Comp::D),
+        just("A").to(Comp::A),
+        just("!D").to(Comp::NotD),
+        just("!A").to(Comp::NotA),
+        just("-D").to(Comp::NegD),
+        just("-A").to(Comp::NegA),
+        just("D+1").to(Comp::DPlusOne),
+        just("A+1").to(Comp::APlusOne),
+        just("D-1").to(Comp::DMinusOne),
+        just("A-1").to(Comp::AMinusOne),
+        just("D+A").to(Comp::DPlusA),
+        just("D-A").to(Comp::DMinusA),
+        just("A-D").to(Comp::AMinusD),
+        just("D&A").to(Comp::DAndA),
+        just("D|A").to(Comp::DOrA),
+    ));
+    let a_1 = choice((
+        just("M").to(Comp::M),
+        just("!M").to(Comp::NotM),
+        just("-M").to(Comp::NegM),
+        just("M+1").to(Comp::MPlusOne),
+        just("M-1").to(Comp::MMinusOne),
+        just("D+M").to(Comp::DPlusM),
+        just("D-M").to(Comp::DMinusM),
+        just("M-D").to(Comp::MMinusD),
+        just("D&M").to(Comp::DAndM),
+        just("D|M").to(Comp::DOrM),
+    ));
+    choice((a_0, a_1)).padded()
+}
 
 fn parse_dest() -> impl Parser<char, Dest, Error = Simple<char>> {
     choice((
@@ -49,6 +93,7 @@ fn parse_dest() -> impl Parser<char, Dest, Error = Simple<char>> {
         just("AD").to(Dest::AD),
         just("ADM").to(Dest::ADM),
     ))
+    .padded()
 }
 
 fn parse_jump() -> impl Parser<char, Jump, Error = Simple<char>> {
@@ -61,10 +106,11 @@ fn parse_jump() -> impl Parser<char, Jump, Error = Simple<char>> {
         just("JLE").to(Jump::JLE),
         just("JMP").to(Jump::JMP),
     ))
+    .padded()
 }
 
 fn parse_label() -> impl Parser<char, String, Error = Simple<char>> {
-    parse_identifier().delimited_by('(', ')')
+    parse_identifier().delimited_by('(', ')').padded()
 }
 
 fn parse_num() -> impl Parser<char, u16, Error = Simple<char>> {
