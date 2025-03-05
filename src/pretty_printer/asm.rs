@@ -3,7 +3,7 @@ use crate::ast::asm::*;
 pub fn print_asm(assembly: Vec<Assembly>) -> String {
     assembly
         .iter()
-        .map(|instruction| format!("{}", print_instruction(instruction.clone())))
+        .map(|instruction| print_instruction(instruction.clone()))
         .collect::<Vec<String>>()
         .join("\n")
         + "\n"
@@ -101,6 +101,7 @@ impl Dest {
             Dest::M => "M".to_string(),
             Dest::D => "D".to_string(),
             Dest::DM => "DM".to_string(),
+            Dest::MD => "MD".to_string(),
             Dest::A => "A".to_string(),
             Dest::AM => "AM".to_string(),
             Dest::AD => "AD".to_string(),

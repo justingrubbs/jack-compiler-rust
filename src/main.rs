@@ -1,25 +1,25 @@
 mod ast {
-    pub mod token;
-    pub mod jack;
-    pub mod vm;
     pub mod asm;
+    pub mod jack;
+    pub mod token;
+    pub mod vm;
 }
 mod compiler {
+    pub mod assembler;
+    pub mod jack_to_vm;
     pub mod lexer;
     pub mod parser;
-    pub mod jack_to_vm;
     pub mod vm_to_asm;
-    pub mod assembler;
 }
 mod pretty_printer {
-    pub mod lexer;
-    pub mod jack;
-    pub mod vm;
     pub mod asm;
+    pub mod jack;
+    pub mod lexer;
+    pub mod vm;
 }
 mod test {
-    pub mod tests;
     pub mod asm_parser;
+    pub mod tests;
 }
 
 use std::env;
@@ -96,9 +96,9 @@ pub fn jack_to_vm(file_path: &str) -> Result<Vec<crate::ast::vm::Command>, Error
         .map(|class| crate::compiler::jack_to_vm::JackToVm::compile(file_name.to_string(), class))
 }
 
-// pub fn parse_asm_file(file_path: &str) -> Result<Vec<crate::ast::asm::Assembly>, Error> {
-//     let tokens = tokenize_jack_file(file_path)?;
-//     crate::asm_parser::parse()
-//         .parse(tokens)
-//         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)))
-// }
+pub fn parse_asm_file(file_path: &str) -> Result<Vec<crate::ast::asm::Assembly>, Error> {
+    let contents = fs::read_to_string(file_path)?;
+    crate::test::asm_parser::parse_assembly()
+        .parse(contents)
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)))
+}

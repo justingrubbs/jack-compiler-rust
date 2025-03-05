@@ -62,6 +62,7 @@ pub enum Dest {
     M,
     D,
     DM,
+    MD,
     A,
     AM,
     AD,

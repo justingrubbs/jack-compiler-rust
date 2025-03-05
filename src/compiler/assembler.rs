@@ -171,6 +171,7 @@ fn compile_dest(o_dest: Option<Dest>) -> String {
             Dest::M => "001".to_string(),
             Dest::D => "010".to_string(),
             Dest::DM => "011".to_string(),
+            Dest::MD => "011".to_string(),
             Dest::A => "100".to_string(),
             Dest::AM => "101".to_string(),
             Dest::AD => "110".to_string(),

@@ -190,193 +190,64 @@ mod tests {
         test_jack_to_vm("tests/jack_to_vm/ArrayTest/Main")
     }
 
+    fn test_asm_parser(file: &str) {
+        let asm_path: String = format!("{}.asm", file); // Create a new String
+        let act_path: String = format!("{}Act.asm", file); // Create a new String
+        let exp_path: String = format!("{}Exp.asm", file); // Create a new String
 
-
-
-    fn test_assembler(file: &str, asm: Vec<crate::ast::asm::Assembly>) {
-        let exp_path: String = format!("{}Exp.hack", file); // Create a new String
-        let act_path: String = format!("{}Act.hack", file); // Create a new String
-
-        let hack = crate::compiler::assembler::Assembler::assemble(asm);
-        let hack_string = hack.join("\n") + "\n";
-        std::fs::write(act_path.clone(), hack_string);
-        let actual = std::path::Path::new(&act_path);
-        let expected = std::path::Path::new(&exp_path);
-        assert!(
-            compare_files(actual, expected),
-            "{} and {} do not match",
-            act_path,
-            exp_path
-        )
+        let r_assembly = crate::parse_asm_file(&asm_path);
+        match r_assembly {
+            Ok(assembly) => {
+                let asm_string = crate::pretty_printer::asm::print_asm(assembly);
+                std::fs::write(act_path.clone(), asm_string);
+                let actual = std::path::Path::new(&act_path);
+                let expected = std::path::Path::new(&exp_path);
+                assert!(
+                    compare_files(actual, expected),
+                    "{} and {} do not match",
+                    act_path,
+                    exp_path
+                )
+            }
+            Err(e) => {
+                eprintln!("Error tokenizing {}: {:?}", asm_path, e);
+                panic!("Failed to tokenize Jack file: {}", asm_path);
+            }
         }
-
-    #[test]
-    fn test_assembler_add_add() {
-        let asm = vec![
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Constant(2)),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::A,
-                o_dest: Some(crate::ast::asm::Dest::D),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Constant(3)),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::DPlusA,
-                o_dest: Some(crate::ast::asm::Dest::D),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Constant(0)),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::D,
-                o_dest: Some(crate::ast::asm::Dest::M),
-                o_jump: None,
-            }),
-        ];
-        test_assembler("tests/assembler/Add/Add",asm)
     }
 
     #[test]
-    fn test_assembler_max_max() {
-        let asm = vec![
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("R0".into())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::M,
-                o_dest: Some(crate::ast::asm::Dest::D),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("R1".into())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::DMinusM,
-                o_dest: Some(crate::ast::asm::Dest::D),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("ITSR0".into())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::D,
-                o_dest: None,
-                o_jump: Some(crate::ast::asm::Jump::JGT),
-            }),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("R1".into())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::M,
-                o_dest: Some(crate::ast::asm::Dest::D),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("OUTPUT_D".into())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::Zero,
-                o_dest: None,
-                o_jump: Some(crate::ast::asm::Jump::JMP),
-            }),
-            crate::ast::asm::Assembly::Label("ITSR0".into()),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("R0".into())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::M,
-                o_dest: Some(crate::ast::asm::Dest::D),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::Label("OUTPUT_D".into()),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("R2".into())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::D,
-                o_dest: Some(crate::ast::asm::Dest::M),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::Label("END".into()),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("END".into())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::Zero,
-                o_dest: None,
-                o_jump: Some(crate::ast::asm::Jump::JMP),
-            }),
-        ];
-        test_assembler("tests/assembler/max/Max",asm)
+    fn test_asm_parser_assembler_add_add() {
+        test_asm_parser("tests/assembler/add/Add")
     }
 
     #[test]
-    fn test_assembler_rect_rect() {
-        let asm = vec![
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("R0".to_string())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::M,
-                o_dest: Some(crate::ast::asm::Dest::D),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("END".to_string())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::D,
-                o_dest: None,
-                o_jump: Some(crate::ast::asm::Jump::JLE),
-            }),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("n".to_string())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::D,
-                o_dest: Some(crate::ast::asm::Dest::M),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("SCREEN".to_string())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::A,
-                o_dest: Some(crate::ast::asm::Dest::D),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("addr".to_string())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::D,
-                o_dest: Some(crate::ast::asm::Dest::M),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::Label("LOOP".to_string()),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("addr".to_string())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::M,
-                o_dest: Some(crate::ast::asm::Dest::A),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::NegOne,
-                o_dest: Some(crate::ast::asm::Dest::M),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("addr".to_string())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::M,
-                o_dest: Some(crate::ast::asm::Dest::D),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Constant(32)),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::DPlusA,
-                o_dest: Some(crate::ast::asm::Dest::D),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("addr".to_string())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::D,
-                o_dest: Some(crate::ast::asm::Dest::M),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("n".to_string())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::MMinusOne,
-                o_dest: Some(crate::ast::asm::Dest::DM),
-                o_jump: None,
-            }),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("LOOP".to_string())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::D,
-                o_dest: None,
-                o_jump: Some(crate::ast::asm::Jump::JGT),
-            }),
-            crate::ast::asm::Assembly::Label("END".to_string()),
-            crate::ast::asm::Assembly::A(crate::ast::asm::AInstruction::Symbol("END".to_string())),
-            crate::ast::asm::Assembly::C(crate::ast::asm::CInstruction {
-                comp: crate::ast::asm::Comp::Zero,
-                o_dest: None,
-                o_jump: Some(crate::ast::asm::Jump::JMP),
-            }),
-        ];
-        test_assembler("tests/assembler/rect/Rect", asm)
+    fn test_asm_parser_assembler_max_max() {
+        test_asm_parser("tests/assembler/max/Max")
     }
 
+    #[test]
+    fn test_asm_parser_assembler_max_maxl() {
+        test_asm_parser("tests/assembler/max/MaxL")
+    }
+
+    #[test]
+    fn test_asm_parser_assembler_pong_pong() {
+        test_asm_parser("tests/assembler/pong/Pong")
+    }
+
+    #[test]
+    fn test_asm_parser_assembler_pong_pongl() {
+        test_asm_parser("tests/assembler/pong/PongL")
+    }
+
+    #[test]
+    fn test_asm_parser_assembler_rect_rect() {
+        test_asm_parser("tests/assembler/rect/Rect")
+    }
+
+    #[test]
+    fn test_asm_parser_assembler_rect_rectl() {
+        test_asm_parser("tests/assembler/rect/RectL")
+    }
 }
