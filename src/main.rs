@@ -17,9 +17,7 @@ mod pretty_printer {
     pub mod vm;
     pub mod asm;
 }
-mod misc {
-    pub mod asm_parser;
-}
+mod asm_parser;
 mod tests;
 
 use std::env;
@@ -94,4 +92,11 @@ pub fn jack_to_vm(file_path: &str) -> Result<Vec<crate::ast::vm::Command>, Error
         .to_string();
     parse_jack_file(file_path)
         .map(|class| crate::compiler::jack_to_vm::JackToVm::compile(file_name.to_string(), class))
+}
+
+pub fn parse_asm_file(file_path: &str) -> Result<Vec<crate::ast::asm::Assembly>, Error> {
+    let tokens = tokenize_jack_file(file_path)?;
+    crate::asm_parser::parse()
+        .parse(tokens)
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)))
 }

@@ -66,6 +66,7 @@ impl Symbol {
             Symbol::Greater => "&gt;",
             Symbol::Equal => "=",
             Symbol::Tilde => "~",
+            Symbol::At => "@",
         }
     }
 }

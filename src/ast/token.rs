@@ -57,4 +57,5 @@ pub enum Symbol {
     Greater,
     Equal,
     Tilde,
+    At,
 }
