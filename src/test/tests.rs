@@ -22,10 +22,8 @@ mod tests {
         assert!(!bad, "Files are equivalent");
     }
 
-
-// Testing lexing:
-// ----------------------------------------------------------------------------
-    // Input is without file extension
+    // Testing lexing:
+    // ----------------------------------------------------------------------------
     fn test_lexer(file: &str) {
         let jack_path: String = format!("{}.jack", file); // Create a new String
         let exp_path: String = format!("{}Exp.xml", file); // Create a new String
@@ -52,9 +50,6 @@ mod tests {
         }
     }
 
-    // Might need to manually convert to LF every time
-
-    // Lexer tests:
     #[test]
     fn test_lexer_arraytest_main() {
         test_lexer("tests/lexer/ArrayTest/Main");
@@ -75,9 +70,8 @@ mod tests {
         test_lexer("tests/lexer/Square/SquareGame");
     }
 
-// Testing parser:
-// ----------------------------------------------------------------------------
-    // Parser tests:
+    // Testing parser:
+    // ----------------------------------------------------------------------------
     fn test_parser(file: &str) {
         let jack_path: String = format!("{}.jack", file);
         let exp_path: String = format!("{}Exp.jack", file);
@@ -124,8 +118,8 @@ mod tests {
         test_parser("tests/parser/Square/SquareGame")
     }
 
-// Testing jack_to_vm:
-// ----------------------------------------------------------------------------
+    // Testing jack_to_vm:
+    // ----------------------------------------------------------------------------
     fn test_jack_to_vm(file: &str) {
         let jack_path: String = format!("{}.jack", file); // Create a new String
         let exp_path: String = format!("{}Exp.vm", file); // Create a new String
@@ -197,8 +191,8 @@ mod tests {
         test_jack_to_vm("tests/jack_to_vm/ArrayTest/Main")
     }
 
-// Testing asm_parser:
-// ----------------------------------------------------------------------------
+    // Testing asm_parser:
+    // ----------------------------------------------------------------------------
     fn test_asm_parser(file: &str) {
         let asm_path: String = format!("{}.asm", file); // Create a new String
         let act_path: String = format!("{}Act.asm", file); // Create a new String
@@ -260,8 +254,8 @@ mod tests {
         test_asm_parser("tests/assembler/rect/RectL")
     }
 
-// Testing assembler:
-// ----------------------------------------------------------------------------
+    // Testing assembler:
+    // ----------------------------------------------------------------------------
     fn test_assembler(file: &str) {
         let asm_path: String = format!("{}.asm", file); // Create a new String
         let exp_path: String = format!("{}Exp.hack", file); // Create a new String
@@ -322,17 +316,4 @@ mod tests {
     fn test_assembler_rect_rectl() {
         test_assembler("tests/assembler/rect/RectL")
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
