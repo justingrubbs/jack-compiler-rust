@@ -22,6 +22,9 @@ mod tests {
         assert!(!bad, "Files are equivalent");
     }
 
+
+// Testing lexing:
+// ----------------------------------------------------------------------------
     // Input is without file extension
     fn test_lexer(file: &str) {
         let jack_path: String = format!("{}.jack", file); // Create a new String
@@ -72,6 +75,8 @@ mod tests {
         test_lexer("tests/lexer/Square/SquareGame");
     }
 
+// Testing parser:
+// ----------------------------------------------------------------------------
     // Parser tests:
     fn test_parser(file: &str) {
         let jack_path: String = format!("{}.jack", file);
@@ -119,6 +124,8 @@ mod tests {
         test_parser("tests/parser/Square/SquareGame")
     }
 
+// Testing jack_to_vm:
+// ----------------------------------------------------------------------------
     fn test_jack_to_vm(file: &str) {
         let jack_path: String = format!("{}.jack", file); // Create a new String
         let exp_path: String = format!("{}Exp.vm", file); // Create a new String
@@ -190,6 +197,8 @@ mod tests {
         test_jack_to_vm("tests/jack_to_vm/ArrayTest/Main")
     }
 
+// Testing asm_parser:
+// ----------------------------------------------------------------------------
     fn test_asm_parser(file: &str) {
         let asm_path: String = format!("{}.asm", file); // Create a new String
         let act_path: String = format!("{}Act.asm", file); // Create a new String
@@ -250,4 +259,80 @@ mod tests {
     fn test_asm_parser_assembler_rect_rectl() {
         test_asm_parser("tests/assembler/rect/RectL")
     }
+
+// Testing assembler:
+// ----------------------------------------------------------------------------
+    fn test_assembler(file: &str) {
+        let asm_path: String = format!("{}.asm", file); // Create a new String
+        let exp_path: String = format!("{}Exp.hack", file); // Create a new String
+        let act_path: String = format!("{}Act.hack", file); // Create a new String
+
+        let r_hack = crate::assembler(&asm_path);
+        match r_hack {
+            Ok(hack) => {
+                let hack_string = hack.join("\n") + "\n";
+                std::fs::write(act_path.clone(), hack_string);
+                let actual = std::path::Path::new(&act_path);
+                let expected = std::path::Path::new(&exp_path);
+                assert!(
+                    compare_files(actual, expected),
+                    "{} and {} do not match",
+                    act_path,
+                    exp_path
+                )
+            }
+            Err(e) => {
+                eprintln!("Error compiling to VM {}: {:?}", asm_path, e);
+                panic!("Failed to compile Jack file to VM: {}", asm_path);
+            }
+        }
+    }
+
+    #[test]
+    fn test_assembler_add_add() {
+        test_assembler("tests/assembler/add/Add")
+    }
+
+    #[test]
+    fn test_assembler_max_max() {
+        test_assembler("tests/assembler/max/Max")
+    }
+
+    #[test]
+    fn test_assembler_max_maxl() {
+        test_assembler("tests/assembler/max/MaxL")
+    }
+
+    #[test]
+    fn test_assembler_pong_pong() {
+        test_assembler("tests/assembler/pong/Pong")
+    }
+
+    #[test]
+    fn test_assembler_pong_pongl() {
+        test_assembler("tests/assembler/pong/PongL")
+    }
+
+    #[test]
+    fn test_assembler_rect_rect() {
+        test_assembler("tests/assembler/rect/Rect")
+    }
+
+    #[test]
+    fn test_assembler_rect_rectl() {
+        test_assembler("tests/assembler/rect/RectL")
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

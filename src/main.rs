@@ -102,3 +102,9 @@ pub fn parse_asm_file(file_path: &str) -> Result<Vec<crate::ast::asm::Assembly>,
         .parse(contents)
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)))
 }
+
+// Compile a single ASM file into hack
+pub fn assembler(file_path: &str) -> Result<Vec<String>, Error> {
+    parse_asm_file(file_path)
+        .map(|v_asm| crate::compiler::assembler::Assembler::assemble(v_asm))
+}
