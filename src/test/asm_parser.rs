@@ -35,6 +35,34 @@ fn parse_a_instruction() -> impl Parser<char, AInstruction, Error = Simple<char>
     )))
 }
 
+// fn parse_c_instruction() -> impl Parser<char, CInstruction, Error = Simple<char>> {
+
+// }
+
+fn parse_dest() -> impl Parser<char, Dest, Error = Simple<char>> {
+    choice((
+        just("M").to(Dest::M),
+        just("D").to(Dest::D),
+        just("DM").to(Dest::DM),
+        just("A").to(Dest::A),
+        just("AM").to(Dest::AM),
+        just("AD").to(Dest::AD),
+        just("ADM").to(Dest::ADM),
+    ))
+}
+
+fn parse_jump() -> impl Parser<char, Jump, Error = Simple<char>> {
+    choice((
+        just("JGT").to(Jump::JGT),
+        just("JEQ").to(Jump::JEQ),
+        just("JGE").to(Jump::JGE),
+        just("JLT").to(Jump::JLT),
+        just("JNE").to(Jump::JNE),
+        just("JLE").to(Jump::JLE),
+        just("JMP").to(Jump::JMP),
+    ))
+}
+
 fn parse_label() -> impl Parser<char, String, Error = Simple<char>> {
     parse_identifier().delimited_by('(', ')')
 }
