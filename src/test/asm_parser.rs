@@ -2,6 +2,8 @@ use crate::ast::asm::*;
 
 use chumsky::prelude::*;
 
+// This file is not intended to be a full-fledged assembly parser,
+// as it is specifically tailored to work on the tests/assembler/ test files.
 pub fn parse_assembly() -> impl Parser<char, Vec<Assembly>, Error = Simple<char>> {
     parse_comment()
         .repeated()
@@ -47,7 +49,7 @@ fn parse_c_instruction() -> impl Parser<char, CInstruction, Error = Simple<char>
 }
 
 fn parse_comp() -> impl Parser<char, Comp, Error = Simple<char>> {
-    let a_0 = choice((
+    let c1 = choice((
         just("0").to(Comp::Zero),
         just("1").to(Comp::One),
         just("-1").to(Comp::NegOne),
@@ -65,7 +67,7 @@ fn parse_comp() -> impl Parser<char, Comp, Error = Simple<char>> {
         just("D&A").to(Comp::DAndA),
         just("D|A").to(Comp::DOrA),
     ));
-    let a_1 = choice((
+    let c2 = choice((
         just("!M").to(Comp::NotM),
         just("-M").to(Comp::NegM),
         just("M+1").to(Comp::MPlusOne),
@@ -79,7 +81,7 @@ fn parse_comp() -> impl Parser<char, Comp, Error = Simple<char>> {
         just("A").to(Comp::A),
         just("M").to(Comp::M),
     ));
-    choice((a_0, a_1)).padded()
+    choice((c1, c2)).padded()
 }
 
 fn parse_dest() -> impl Parser<char, Dest, Error = Simple<char>> {
