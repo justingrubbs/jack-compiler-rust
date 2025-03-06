@@ -25,9 +25,9 @@ mod tests {
     // Testing lexing:
     // ----------------------------------------------------------------------------
     fn test_lexer(file: &str) {
-        let jack_path: String = format!("{}.jack", file); // Create a new String
-        let exp_path: String = format!("{}Exp.xml", file); // Create a new String
-        let act_path: String = format!("{}Act.xml", file); // Create a new String
+        let jack_path: String = format!("{}.jack", file);
+        let exp_path: String = format!("{}Exp.xml", file);
+        let act_path: String = format!("{}Act.xml", file);
 
         let r_tokens = crate::tokenize_jack_file(&jack_path);
         match r_tokens {
@@ -121,9 +121,9 @@ mod tests {
     // Testing jack_to_vm:
     // ----------------------------------------------------------------------------
     fn test_jack_to_vm(file: &str) {
-        let jack_path: String = format!("{}.jack", file); // Create a new String
-        let exp_path: String = format!("{}Exp.vm", file); // Create a new String
-        let act_path: String = format!("{}Act.vm", file); // Create a new String
+        let jack_path: String = format!("{}.jack", file);
+        let exp_path: String = format!("{}Exp.vm", file);
+        let act_path: String = format!("{}Act.vm", file);
 
         let r_commands = crate::jack_to_vm(&jack_path);
         match r_commands {
@@ -194,9 +194,9 @@ mod tests {
     // Testing asm_parser:
     // ----------------------------------------------------------------------------
     fn test_asm_parser(file: &str) {
-        let asm_path: String = format!("{}.asm", file); // Create a new String
-        let act_path: String = format!("{}Act.asm", file); // Create a new String
-        let exp_path: String = format!("{}Exp.asm", file); // Create a new String
+        let asm_path: String = format!("{}.asm", file);
+        let act_path: String = format!("{}Act.asm", file);
+        let exp_path: String = format!("{}Exp.asm", file);
 
         let r_assembly = crate::parse_asm_file(&asm_path);
         match r_assembly {
@@ -257,9 +257,9 @@ mod tests {
     // Testing assembler:
     // ----------------------------------------------------------------------------
     fn test_assembler(file: &str) {
-        let asm_path: String = format!("{}.asm", file); // Create a new String
-        let exp_path: String = format!("{}Exp.hack", file); // Create a new String
-        let act_path: String = format!("{}Act.hack", file); // Create a new String
+        let asm_path: String = format!("{}.asm", file);
+        let exp_path: String = format!("{}Exp.hack", file);
+        let act_path: String = format!("{}Act.hack", file);
 
         let r_hack = crate::assembler(&asm_path);
         match r_hack {
@@ -322,9 +322,9 @@ mod tests {
     // We modify the file extensions as other tests
     // will be grabbing all `.vm` files in directory.
     fn test_vm_parser(file: &str) {
-        let vm_path: String = format!("{}.vm", file); // Create a new String
-        let act_path: String = format!("{}.avm", file); // Create a new String
-        let exp_path: String = format!("{}.evm", file); // Create a new String
+        let vm_path: String = format!("{}.vm", file);
+        let act_path: String = format!("{}.avm", file);
+        let exp_path: String = format!("{}.evm", file);
 
         let r_commands = crate::parse_vm_file(&vm_path);
         match r_commands {
@@ -416,4 +416,39 @@ mod tests {
     fn test_vm_parser_vm_to_asm_statictest_statictest() {
         test_vm_parser("tests/vm_to_asm/StaticTest/StaticTest")
     }
+
+
+    // Testing virtual machine:
+    // ----------------------------------------------------------------------------
+    fn test_vm(file: &str) {
+        let vm_path: String = format!("{}.vm", file);
+        let exp_path: String = format!("{}Exp.asm", file);
+        let act_path: String = format!("{}Act.asm", file);
+
+        let r_asm = crate::vm_to_asm(&vm_path);
+        match r_asm {
+            Ok(asm) => {
+                let asm_string = crate::pretty_printer::asm::print_asm(asm);
+                std::fs::write(act_path.clone(), asm_string);
+                let actual = std::path::Path::new(&act_path);
+                let expected = std::path::Path::new(&exp_path);
+                assert!(
+                    compare_files(actual, expected),
+                    "{} and {} do not match",
+                    act_path,
+                    exp_path
+                )
+            }
+            Err(e) => {
+                eprintln!("Error compiling to VM {}: {:?}", vm_path, e);
+                panic!("Failed to compile Jack file to VM: {}", vm_path);
+            }
+        }
+    }
+
+    #[test]
+    fn test_vm_to_asm_simpleadd_simpleadd() {
+        test_vm("tests/vm_to_asm/SimpleAdd/SimpleAdd")
+    }
+
 }

@@ -116,3 +116,14 @@ pub fn parse_vm_file(file_path: &str) -> Result<Vec<crate::ast::vm::Command>, Er
         .parse(contents)
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)))
 }
+
+// Compile a single vm file into asm
+pub fn vm_to_asm(file_path: &str) -> Result<Vec<crate::ast::asm::Assembly>, Error> {
+    let file_name = Path::new(file_path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or(file_path)
+        .to_string();
+    parse_vm_file(file_path)
+        .map(|commands| crate::compiler::vm_to_asm::VmToAsm::compile(file_name.to_string(), commands))
+}
