@@ -440,15 +440,22 @@ mod tests {
                 // )
             }
             Err(e) => {
-                eprintln!("Error compiling to VM {}: {:?}", vm_path, e);
-                panic!("Failed to compile Jack file to VM: {}", vm_path);
+                eprintln!("Error transforming VM to ASM {}: {:?}", vm_path, e);
+                panic!("Failed to transform VM to ASM: {}", vm_path);
             }
         }
     }
 
+    // Following tests will eventually target a directory rather than file
+    // Furthermore, will try to run the CPUEmulator to automate tests
     #[test]
-    fn test_vm_to_asm_simpleadd_simpleadd() {
+    fn test_vm_to_asm_simpleadd() { // passed
         test_vm("tests/vm_to_asm/SimpleAdd/SimpleAdd")
+    }
+
+    #[test]
+    fn test_vm_to_asm_stacktest() { // passed
+        test_vm("tests/vm_to_asm/StackTest/StackTest")
     }
 
 }

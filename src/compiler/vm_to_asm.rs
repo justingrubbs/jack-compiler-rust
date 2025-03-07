@@ -84,14 +84,31 @@ impl VmToAsm {
                 self.push_a(AInstruction::Symbol(symbol.to_string()))
                     .push_c(Some(Dest::D), Comp::M, None)
             }
-            Segment::Temp => todo!(),
-            _ => todo!(),
+            Segment::Static => {
+                let file_name = &self.file_name;
+                self.push_a(AInstruction::Symbol(format!("{}.{}", file_name, i)))
+                    .push_c(Some(Dest::D), Comp::M, None)
+            }
+            Segment::Temp => {
+                self.push_a(AInstruction::Constant(i + 5))
+                    .push_c(Some(Dest::D), Comp::M, None)
+            }
+            seg => self
+                .push_a(AInstruction::Constant(i))
+                .push_c(Some(Dest::D), Comp::A, None)
+                .push_a(AInstruction::Symbol(show_segment(seg)))
+                .push_c(Some(Dest::A), Comp::DPlusM, None)
+                .push_c(Some(Dest::D), Comp::M, None),
         };
         self.push_a(AInstruction::Symbol("SP".to_string()))
             .push_c(Some(Dest::A), Comp::M, None)
             .push_c(Some(Dest::M), Comp::D, None)
             .push_a(AInstruction::Symbol("SP".to_string()))
             .push_c(Some(Dest::M), Comp::MPlusOne, None)
+    }
+
+    fn compile_pop(&mut self, segment: Segment, i: u16) -> &mut Self {
+        self
     }
 
     fn compile_acl(&mut self, acl: ACL) -> &mut Self {
@@ -176,5 +193,15 @@ fn comparison_to_jump(comp: Comparison) -> Jump {
         Comparison::Eq => Jump::JEQ,
         Comparison::Lt => Jump::JLT,
         Comparison::Gt => Jump::JGT,
+    }
+}
+
+fn show_segment(seg: Segment) -> String {
+    match seg {
+        Segment::This => "THIS".to_string(),
+        Segment::That => "THAT".to_string(),
+        Segment::Argument => "ARG".to_string(),
+        Segment::Local => "LCL".to_string(),
+        _ => panic!("Invalid segment shown:"),
     }
 }
