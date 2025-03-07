@@ -22,6 +22,10 @@ impl VmToAsm {
         take(&mut asm.assembly_stack)
     }
 
+    fn inc_label(&mut self) {
+        self.label_count += 1;
+    }
+
     fn push(&mut self, asm: Assembly) -> &mut Self {
         self.assembly_stack.push(asm);
         self
@@ -31,7 +35,7 @@ impl VmToAsm {
         self.push(Assembly::A(a_instr))
     }
 
-    fn push_c(&mut self, comp: Comp, o_dest: Option<Dest>, o_jump: Option<Jump>) -> &mut Self {
+    fn push_c(&mut self, o_dest: Option<Dest>, comp: Comp, o_jump: Option<Jump>) -> &mut Self {
         self.push(Assembly::C(CInstruction {
             comp,
             o_dest,
@@ -66,7 +70,7 @@ impl VmToAsm {
         match segment {
             Segment::Constant => {
                 self.push_a(AInstruction::Constant(i))
-                    .push_c(Comp::A, Some(Dest::D), None)
+                    .push_c(Some(Dest::D), Comp::A, None)
             }
             Segment::Pointer => {
                 let symbol = match i {
@@ -78,27 +82,99 @@ impl VmToAsm {
                     ),
                 };
                 self.push_a(AInstruction::Symbol(symbol.to_string()))
-                    .push_c(Comp::M, Some(Dest::D), None)
+                    .push_c(Some(Dest::D), Comp::M, None)
             }
             Segment::Temp => todo!(),
             _ => todo!(),
         };
         self.push_a(AInstruction::Symbol("SP".to_string()))
-            .push_c(Comp::M, Some(Dest::A), None)
-            .push_c(Comp::D, Some(Dest::M), None)
+            .push_c(Some(Dest::A), Comp::M, None)
+            .push_c(Some(Dest::M), Comp::D, None)
             .push_a(AInstruction::Symbol("SP".to_string()))
-            .push_c(Comp::MPlusOne,Some(Dest::M), None)
+            .push_c(Some(Dest::M), Comp::MPlusOne, None)
     }
 
     fn compile_acl(&mut self, acl: ACL) -> &mut Self {
         match acl {
-            ACL::Arithmetic(a) => todo!(),
-            ACL::Comparison(c) => todo!(),
-            ACL::Logical(l) => todo!(),
+            ACL::Arithmetic(a) => self.compile_arithmetic(a),
+            ACL::Comparison(c) => self.compile_comparison(c),
+            ACL::Logical(l) => self.compile_logical(l),
         }
     }
 
     fn compile_arithmetic(&mut self, arith: Arithmetic) -> &mut Self {
-        self
+        match arith {
+            Arithmetic::Neg => self.compile_unary().push_c(Some(Dest::M), Comp::NegM, None),
+            Arithmetic::Add => self
+                .compile_binary()
+                .push_c(Some(Dest::M), Comp::DPlusM, None),
+            Arithmetic::Sub => self
+                .compile_binary()
+                .push_c(Some(Dest::M), Comp::MMinusD, None),
+        }
+    }
+
+    fn compile_comparison(&mut self, comp: Comparison) -> &mut Self {
+        let i = self.label_count;
+        self.inc_label();
+        let comp_s = show_comparison(comp.clone());
+        let comp_j = comparison_to_jump(comp);
+        self.compile_binary()
+            .push_c(Some(Dest::D), Comp::MMinusD, None)
+            .push_a(AInstruction::Symbol(format!("{}_true_{}", comp_s, i)))
+            .push_c(None, Comp::D, Some(comp_j))
+            .push_a(AInstruction::Symbol("SP".to_string()))
+            .push_c(Some(Dest::A), Comp::MMinusOne, None)
+            .push_c(Some(Dest::M), Comp::Zero, None)
+            .push_a(AInstruction::Symbol(format!("{}_end_{}", comp_s, i)))
+            .push_c(None, Comp::Zero, Some(Jump::JMP))
+            .push_label(format!("{}_true_{}", comp_s, i))
+            .push_a(AInstruction::Symbol("SP".to_string()))
+            .push_c(Some(Dest::A), Comp::MMinusOne, None)
+            .push_c(Some(Dest::M), Comp::NegOne, None)
+            .push_label(format!("{}_end_{}", comp_s, i))
+    }
+
+    fn compile_logical(&mut self, logic: Logical) -> &mut Self {
+        match logic {
+            Logical::And => self
+                .compile_binary()
+                .push_c(Some(Dest::M), Comp::DAndM, None),
+            Logical::Or => self
+                .compile_binary()
+                .push_c(Some(Dest::M), Comp::DOrM, None),
+            Logical::Not => self.compile_unary().push_c(Some(Dest::M), Comp::NotM, None),
+        }
+    }
+
+    fn compile_unary(&mut self) -> &mut Self {
+        self.push_a(AInstruction::Symbol("SP".to_string())).push_c(
+            Some(Dest::A),
+            Comp::MMinusOne,
+            None,
+        )
+    }
+
+    fn compile_binary(&mut self) -> &mut Self {
+        self.push_a(AInstruction::Symbol("SP".to_string()))
+            .push_c(Some(Dest::AM), Comp::MMinusOne, None)
+            .push_c(Some(Dest::D), Comp::M, None)
+            .push_c(Some(Dest::A), Comp::AMinusOne, None)
+    }
+}
+
+fn show_comparison(comp: Comparison) -> String {
+    match comp {
+        Comparison::Eq => "EQ".to_string(),
+        Comparison::Lt => "LT".to_string(),
+        Comparison::Gt => "GT".to_string(),
+    }
+}
+
+fn comparison_to_jump(comp: Comparison) -> Jump {
+    match comp {
+        Comparison::Eq => Jump::JEQ,
+        Comparison::Lt => Jump::JLT,
+        Comparison::Gt => Jump::JGT,
     }
 }
