@@ -417,7 +417,6 @@ mod tests {
         test_vm_parser("tests/vm_to_asm/StaticTest/StaticTest")
     }
 
-
     // Testing virtual machine:
     // ----------------------------------------------------------------------------
     fn test_vm(file: &str) {
@@ -449,13 +448,20 @@ mod tests {
     // Following tests will eventually target a directory rather than file
     // Furthermore, will try to run the CPUEmulator to automate tests
     #[test]
-    fn test_vm_to_asm_simpleadd() { // passed
+    fn test_vm_to_asm_simpleadd() {
+        // passed
         test_vm("tests/vm_to_asm/SimpleAdd/SimpleAdd")
     }
 
     #[test]
-    fn test_vm_to_asm_stacktest() { // passed
+    fn test_vm_to_asm_stacktest() {
+        // passed
         test_vm("tests/vm_to_asm/StackTest/StackTest")
     }
 
+    #[test]
+    fn test_vm_to_asm_basictest() {
+        // passed
+        test_vm("tests/vm_to_asm/BasicTest/BasicTest")
+    }
 }

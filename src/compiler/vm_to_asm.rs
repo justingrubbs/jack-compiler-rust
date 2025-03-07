@@ -58,7 +58,7 @@ impl VmToAsm {
         match command {
             Command::Stack(s) => match s {
                 Stack::Push(s, i) => self.compile_push(s, i),
-                Stack::Pop(s, i) => todo!(),
+                Stack::Pop(s, i) => self.compile_pop(s, i),
             },
             Command::ACL(acl) => self.compile_acl(acl),
             Command::Function(f) => todo!(),
@@ -85,8 +85,8 @@ impl VmToAsm {
                     .push_c(Some(Dest::D), Comp::M, None)
             }
             Segment::Static => {
-                let file_name = &self.file_name;
-                self.push_a(AInstruction::Symbol(format!("{}.{}", file_name, i)))
+                let file_name = format!("{}.{}", &self.file_name, i);
+                self.push_a(AInstruction::Symbol(file_name))
                     .push_c(Some(Dest::D), Comp::M, None)
             }
             Segment::Temp => {
@@ -108,7 +108,53 @@ impl VmToAsm {
     }
 
     fn compile_pop(&mut self, segment: Segment, i: u16) -> &mut Self {
-        self
+        match segment {
+            Segment::Constant => {
+                panic!("Constant segment is not a valid segment for pop commands.")
+            }
+            Segment::Pointer => {
+                let symbol = match i {
+                    0 => "THIS",
+                    1 => "THAT",
+                    other => panic!(
+                        "Invalid pointer index: {}. Only 0 and 1 are allowed.",
+                        other
+                    ),
+                };
+                self.push_a(AInstruction::Symbol("SP".to_string()))
+                    .push_c(Some(Dest::AM), Comp::MMinusOne, None)
+                    .push_c(Some(Dest::D), Comp::M, None)
+                    .push_a(AInstruction::Symbol(symbol.to_string()))
+                    .push_c(Some(Dest::M), Comp::D, None)
+            }
+            Segment::Temp => self
+                .push_a(AInstruction::Symbol("SP".to_string()))
+                .push_c(Some(Dest::AM), Comp::MMinusOne, None)
+                .push_c(Some(Dest::D), Comp::M, None)
+                .push_a(AInstruction::Constant(i + 5))
+                .push_c(Some(Dest::M), Comp::D, None),
+            Segment::Static => {
+                let file_name = format!("{}.{}", &self.file_name, i);
+                self.push_a(AInstruction::Symbol("SP".to_string()))
+                    .push_c(Some(Dest::AM), Comp::MMinusOne, None)
+                    .push_c(Some(Dest::D), Comp::M, None)
+                    .push_a(AInstruction::Symbol(file_name))
+                    .push_c(Some(Dest::M), Comp::D, None)
+            }
+            seg => self
+                .push_a(AInstruction::Constant(i))
+                .push_c(Some(Dest::D), Comp::A, None)
+                .push_a(AInstruction::Symbol(show_segment(seg)))
+                .push_c(Some(Dest::D), Comp::DPlusM, None)
+                .push_a(AInstruction::Symbol("R13".to_string()))
+                .push_c(Some(Dest::M), Comp::D, None)
+                .push_a(AInstruction::Symbol("SP".to_string()))
+                .push_c(Some(Dest::AM), Comp::MMinusOne, None)
+                .push_c(Some(Dest::D), Comp::M, None)
+                .push_a(AInstruction::Symbol("R13".to_string()))
+                .push_c(Some(Dest::A), Comp::M, None)
+                .push_c(Some(Dest::M), Comp::D, None),
+        }
     }
 
     fn compile_acl(&mut self, acl: ACL) -> &mut Self {
