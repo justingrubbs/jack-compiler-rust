@@ -24,7 +24,7 @@ mod tests {
 
     // Testing lexing:
     // ----------------------------------------------------------------------------
-    fn test_lexer(file: &str) {
+    fn lexer(file: &str) {
         let jack_path: String = format!("{}.jack", file);
         let exp_path: String = format!("{}Exp.xml", file);
         let act_path: String = format!("{}Act.xml", file);
@@ -51,23 +51,23 @@ mod tests {
     }
 
     #[test]
-    fn test_lexer_arraytest_main() {
-        test_lexer("tests/lexer/ArrayTest/Main");
+    fn lexer_arraytest_main() {
+        lexer("tests/lexer/ArrayTest/Main");
     }
 
     #[test]
-    fn test_lexer_square_main() {
-        test_lexer("tests/lexer/Square/Main");
+    fn lexer_square_main() {
+        lexer("tests/lexer/Square/Main");
     }
 
     #[test]
-    fn test_lexer_square_square() {
-        test_lexer("tests/lexer/Square/Square");
+    fn lexer_square_square() {
+        lexer("tests/lexer/Square/Square");
     }
 
     #[test]
-    fn test_lexer_square_squaregame() {
-        test_lexer("tests/lexer/Square/SquareGame");
+    fn lexer_square_squaregame() {
+        lexer("tests/lexer/Square/SquareGame");
     }
 
     // Testing parser:

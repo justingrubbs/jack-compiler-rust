@@ -31,8 +31,12 @@ impl VmToAsm {
         self.push(Assembly::A(a_instr))
     }
 
-    fn push_c(&mut self, c_instr: CInstruction) -> &mut Self {
-        self.push(Assembly::C(c_instr))
+    fn push_c(&mut self, comp: Comp, o_dest: Option<Dest>, o_jump: Option<Jump>) -> &mut Self {
+        self.push(Assembly::C(CInstruction {
+            comp,
+            o_dest,
+            o_jump,
+        }))
     }
 
     fn push_label(&mut self, name: String) -> &mut Self {
@@ -52,7 +56,7 @@ impl VmToAsm {
                 Stack::Push(s, i) => self.compile_push(s, i),
                 Stack::Pop(s, i) => todo!(),
             },
-            Command::ACL(acl) => todo!(),
+            Command::ACL(acl) => self.compile_acl(acl),
             Command::Function(f) => todo!(),
             Command::Branch(b) => todo!(),
         }
@@ -60,11 +64,10 @@ impl VmToAsm {
 
     fn compile_push(&mut self, segment: Segment, i: u16) -> &mut Self {
         match segment {
-            Segment::Constant => self.push_a(AInstruction::Constant(i)).push_c(CInstruction {
-                comp: Comp::A,
-                o_dest: Some(Dest::D),
-                o_jump: None,
-            }),
+            Segment::Constant => {
+                self.push_a(AInstruction::Constant(i))
+                    .push_c(Comp::A, Some(Dest::D), None)
+            }
             Segment::Pointer => {
                 let symbol = match i {
                     0 => "THIS",
@@ -75,14 +78,27 @@ impl VmToAsm {
                     ),
                 };
                 self.push_a(AInstruction::Symbol(symbol.to_string()))
-                    .push_c(CInstruction {
-                        comp: Comp::M,
-                        o_dest: Some(Dest::D),
-                        o_jump: None,
-                    })
-            },
+                    .push_c(Comp::M, Some(Dest::D), None)
+            }
             Segment::Temp => todo!(),
             _ => todo!(),
+        };
+        self.push_a(AInstruction::Symbol("SP".to_string()))
+            .push_c(Comp::M, Some(Dest::A), None)
+            .push_c(Comp::D, Some(Dest::M), None)
+            .push_a(AInstruction::Symbol("SP".to_string()))
+            .push_c(Comp::MPlusOne,Some(Dest::M), None)
+    }
+
+    fn compile_acl(&mut self, acl: ACL) -> &mut Self {
+        match acl {
+            ACL::Arithmetic(a) => todo!(),
+            ACL::Comparison(c) => todo!(),
+            ACL::Logical(l) => todo!(),
         }
+    }
+
+    fn compile_arithmetic(&mut self, arith: Arithmetic) -> &mut Self {
+        self
     }
 }
