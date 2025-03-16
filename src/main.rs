@@ -124,6 +124,7 @@ pub fn vm_to_asm(file_path: &str) -> Result<Vec<crate::ast::asm::Assembly>, Erro
         .and_then(|s| s.to_str())
         .unwrap_or(file_path)
         .to_string();
-    parse_vm_file(file_path)
-        .map(|commands| crate::compiler::vm_to_asm::VmToAsm::compile(file_name.to_string(), commands))
+    parse_vm_file(file_path).map(|commands| {
+        crate::compiler::vm_to_asm::VmToAsm::compile(file_name.to_string(), commands)
+    })
 }

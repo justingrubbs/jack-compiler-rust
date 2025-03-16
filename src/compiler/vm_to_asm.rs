@@ -3,6 +3,11 @@ use crate::ast::vm::*;
 
 use std::mem::take;
 
+enum CallPush {
+    True,
+    False,
+}
+
 pub struct VmToAsm {
     file_name: String,
     func_name: String,
@@ -48,25 +53,34 @@ impl VmToAsm {
     }
 
     fn compile_commands(&mut self, commands: Vec<Command>) -> &mut Self {
+        self.compile_bootstrap();
         commands.into_iter().for_each(|command| {
             self.compile_command(command);
         });
         self
     }
 
+    fn compile_bootstrap(&mut self) {
+        self.push_a(AInstruction::Constant(256))
+            .push_c(Some(Dest::D), Comp::A, None)
+            .push_a(AInstruction::Symbol("SP".to_string()))
+            .push_c(Some(Dest::M), Comp::D, None);
+        // .compile_function(Function::Call("Sys.init".to_string(), 0));
+    }
+
     fn compile_command(&mut self, command: Command) -> &mut Self {
         match command {
             Command::Stack(s) => match s {
-                Stack::Push(s, i) => self.compile_push(s, i),
+                Stack::Push(s, i) => self.compile_push(s, i, CallPush::False),
                 Stack::Pop(s, i) => self.compile_pop(s, i),
             },
             Command::ACL(acl) => self.compile_acl(acl),
-            Command::Function(f) => todo!(),
-            Command::Branch(b) => todo!(),
+            Command::Branch(b) => self.compile_branch(b),
+            Command::Function(f) => self.compile_function(f),
         }
     }
 
-    fn compile_push(&mut self, segment: Segment, i: u16) -> &mut Self {
+    fn compile_push(&mut self, segment: Segment, i: u16, bool: CallPush) -> &mut Self {
         match segment {
             Segment::Constant => {
                 self.push_a(AInstruction::Constant(i))
@@ -93,13 +107,24 @@ impl VmToAsm {
                 self.push_a(AInstruction::Constant(i + 5))
                     .push_c(Some(Dest::D), Comp::M, None)
             }
-            seg => self
-                .push_a(AInstruction::Constant(i))
-                .push_c(Some(Dest::D), Comp::A, None)
-                .push_a(AInstruction::Symbol(show_segment(seg)))
-                .push_c(Some(Dest::A), Comp::DPlusM, None)
-                .push_c(Some(Dest::D), Comp::M, None),
+            seg => match bool {
+                CallPush::True => self.push_a(AInstruction::Symbol(show_segment(seg))).push_c(
+                    Some(Dest::D),
+                    Comp::M,
+                    None,
+                ),
+                CallPush::False => self
+                    .push_a(AInstruction::Constant(i))
+                    .push_c(Some(Dest::D), Comp::A, None)
+                    .push_a(AInstruction::Symbol(show_segment(seg)))
+                    .push_c(Some(Dest::A), Comp::DPlusM, None)
+                    .push_c(Some(Dest::D), Comp::M, None),
+            },
         };
+        self.push_pattern()
+    }
+
+    fn push_pattern(&mut self) -> &mut Self {
         self.push_a(AInstruction::Symbol("SP".to_string()))
             .push_c(Some(Dest::A), Comp::M, None)
             .push_c(Some(Dest::M), Comp::D, None)
@@ -223,6 +248,87 @@ impl VmToAsm {
             .push_c(Some(Dest::AM), Comp::MMinusOne, None)
             .push_c(Some(Dest::D), Comp::M, None)
             .push_c(Some(Dest::A), Comp::AMinusOne, None)
+    }
+
+    fn compile_branch(&mut self, branch: Branch) -> &mut Self {
+        match branch {
+            Branch::Label(l) => self.push_label(format!("{}${}", &self.func_name, l)),
+            Branch::Goto(l) => self
+                .push_a(AInstruction::Symbol(format!("{}${}", &self.func_name, l)))
+                .push_c(None, Comp::Zero, Some(Jump::JMP)),
+            Branch::IfGoto(l) => {
+                let func_name = format!("{}${}", &self.func_name, l);
+                self.push_a(AInstruction::Symbol("SP".to_string()))
+                    .push_c(Some(Dest::AM), Comp::MMinusOne, None)
+                    .push_c(Some(Dest::D), Comp::M, None)
+                    .push_c(Some(Dest::A), Comp::AMinusOne, None)
+                    .push_a(AInstruction::Symbol(func_name))
+                    .push_c(None, Comp::D, Some(Jump::JNE))
+            }
+        }
+    }
+
+    fn compile_function(&mut self, func: Function) -> &mut Self {
+        match func {
+            Function::Function(s, i) => {
+                self.func_name = s;
+                let func_name = format!("{}.{}", &self.file_name, &self.func_name);
+                self.label_count = 1;
+                self.push_label(func_name).compile_function_locals(i)
+            }
+            Function::Return => todo!(),
+            Function::Call(s, args) => {
+                let label_count = &self.label_count;
+                let return_address = format!("{}.{}$ret.{}", &self.file_name, s, label_count);
+                let func_name = format!("{}.{}", &self.file_name, &self.func_name);
+                self.label_count += 1;
+                self.push_a(AInstruction::Symbol(return_address.clone()))
+                    .push_c(Some(Dest::D), Comp::A, None)
+                    .push_pattern()
+                    .compile_push(Segment::Local, 0, CallPush::True)
+                    .compile_push(Segment::Argument, 0, CallPush::True)
+                    .compile_push(Segment::This, 0, CallPush::True)
+                    .compile_push(Segment::That, 0, CallPush::True)
+                    //
+                    .push_a(AInstruction::Symbol("SP".to_string()))
+                    .push_c(Some(Dest::D), Comp::M, None)
+                    .push_a(AInstruction::Constant(args + 5))
+                    .push_c(Some(Dest::D), Comp::DMinusA, None)
+                    .push_a(AInstruction::Symbol("ARG".to_string()))
+                    .push_c(Some(Dest::M), Comp::D, None)
+                    //
+                    .push_a(AInstruction::Symbol("SP".to_string()))
+                    .push_c(Some(Dest::D), Comp::M, None)
+                    .push_a(AInstruction::Symbol("LCL".to_string()))
+                    .push_c(Some(Dest::M), Comp::D, None)
+                    //
+                    .push_a(AInstruction::Symbol(func_name))
+                    .push_c(None, Comp::Zero, Some(Jump::JMP))
+                    .push_label(return_address)
+            }
+        }
+    }
+
+    fn compile_function_locals(&mut self, i: u16) -> &mut Self {
+        match i {
+            0 => self,
+            _ => self
+                .push_a(AInstruction::Symbol("SP".to_string()))
+                .push_c(Some(Dest::A), Comp::M, None)
+                .push_c(Some(Dest::M), Comp::Zero, None)
+                .push_a(AInstruction::Symbol("SP".to_string()))
+                .push_c(Some(Dest::M), Comp::MPlusOne, None)
+                .compile_function_locals(i - 1),
+        }
+    }
+
+    fn compile_seg_reset(&mut self, seg: Segment) -> &mut Self {
+        self.push_a(AInstruction::Symbol("R13".to_string()))
+            .push_c(Some(Dest::D), Comp::MMinusOne, None)
+            .push_c(Some(Dest::AM), Comp::D, None)
+            .push_c(Some(Dest::D), Comp::M, None)
+            .push_a(AInstruction::Symbol(show_segment(seg)))
+            .push_c(Some(Dest::M), Comp::D, None)
     }
 }
 

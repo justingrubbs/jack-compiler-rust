@@ -72,7 +72,7 @@ mod tests {
 
     // Testing parser:
     // ----------------------------------------------------------------------------
-    fn test_parser(file: &str) {
+    fn parser(file: &str) {
         let jack_path: String = format!("{}.jack", file);
         let exp_path: String = format!("{}Exp.jack", file);
         let act_path: String = format!("{}Act.jack", file);
@@ -99,28 +99,28 @@ mod tests {
     }
 
     #[test]
-    fn test_parser_arraytest_main() {
-        test_parser("tests/parser/ArrayTest/Main")
+    fn parser_arraytest_main() {
+        parser("tests/parser/ArrayTest/Main")
     }
 
     #[test]
     fn test_parser_square_main() {
-        test_parser("tests/parser/Square/Main")
+        parser("tests/parser/Square/Main")
     }
 
     #[test]
     fn test_parser_square_square() {
-        test_parser("tests/parser/Square/Square")
+        parser("tests/parser/Square/Square")
     }
 
     #[test]
-    fn test_parser_square_squaregame() {
-        test_parser("tests/parser/Square/SquareGame")
+    fn parser_square_squaregame() {
+        parser("tests/parser/Square/SquareGame")
     }
 
     // Testing jack_to_vm:
     // ----------------------------------------------------------------------------
-    fn test_jack_to_vm(file: &str) {
+    fn jack_to_vm(file: &str) {
         let jack_path: String = format!("{}.jack", file);
         let exp_path: String = format!("{}Exp.vm", file);
         let act_path: String = format!("{}Act.vm", file);
@@ -147,53 +147,53 @@ mod tests {
     }
 
     #[test]
-    fn test_jack_to_vm_three_main() {
-        test_jack_to_vm("tests/jack_to_vm/Three/Main")
+    fn jack_to_vm_three_main() {
+        jack_to_vm("tests/jack_to_vm/Three/Main")
     }
 
     #[test]
-    fn test_jack_to_vm_factorial_main() {
-        test_jack_to_vm("tests/jack_to_vm/Factorial/Main")
+    fn jack_to_vm_factorial_main() {
+        jack_to_vm("tests/jack_to_vm/Factorial/Main")
     }
 
     #[test]
-    fn test_jack_to_vm_alphawhere_main() {
-        test_jack_to_vm("tests/jack_to_vm/AlphaWhere/Main")
+    fn jack_to_vm_alphawhere_main() {
+        jack_to_vm("tests/jack_to_vm/AlphaWhere/Main")
     }
 
     #[test]
-    fn test_jack_to_vm_alphashow_main() {
-        test_jack_to_vm("tests/jack_to_vm/AlphaShow/Main")
+    fn jack_to_vm_alphashow_main() {
+        jack_to_vm("tests/jack_to_vm/AlphaShow/Main")
     }
 
     #[test]
-    fn test_jack_to_vm_square_main() {
-        test_jack_to_vm("tests/jack_to_vm/Square/Main")
+    fn jack_to_vm_square_main() {
+        jack_to_vm("tests/jack_to_vm/Square/Main")
     }
 
     #[test]
-    fn test_jack_to_vm_square_square() {
-        test_jack_to_vm("tests/jack_to_vm/Square/Square")
+    fn jack_to_vm_square_square() {
+        jack_to_vm("tests/jack_to_vm/Square/Square")
     }
 
     #[test]
-    fn test_jack_to_vm_square_squaregame() {
-        test_jack_to_vm("tests/jack_to_vm/Square/SquareGame")
+    fn jack_to_vm_square_squaregame() {
+        jack_to_vm("tests/jack_to_vm/Square/SquareGame")
     }
 
     #[test]
-    fn test_jack_to_vm_converttobin_main() {
-        test_jack_to_vm("tests/jack_to_vm/ConvertToBin/Main")
+    fn jack_to_vm_converttobin_main() {
+        jack_to_vm("tests/jack_to_vm/ConvertToBin/Main")
     }
 
     #[test]
-    fn test_jack_to_vm_arraytest_main() {
-        test_jack_to_vm("tests/jack_to_vm/ArrayTest/Main")
+    fn jack_to_vm_arraytest_main() {
+        jack_to_vm("tests/jack_to_vm/ArrayTest/Main")
     }
 
     // Testing asm_parser:
     // ----------------------------------------------------------------------------
-    fn test_asm_parser(file: &str) {
+    fn asm_parser(file: &str) {
         let asm_path: String = format!("{}.asm", file);
         let act_path: String = format!("{}Act.asm", file);
         let exp_path: String = format!("{}Exp.asm", file);
@@ -220,43 +220,43 @@ mod tests {
     }
 
     #[test]
-    fn test_asm_parser_assembler_add_add() {
-        test_asm_parser("tests/assembler/add/Add")
+    fn asm_parser_assembler_add_add() {
+        asm_parser("tests/assembler/add/Add")
     }
 
     #[test]
-    fn test_asm_parser_assembler_max_max() {
-        test_asm_parser("tests/assembler/max/Max")
+    fn asm_parser_assembler_max_max() {
+        asm_parser("tests/assembler/max/Max")
     }
 
     #[test]
-    fn test_asm_parser_assembler_max_maxl() {
-        test_asm_parser("tests/assembler/max/MaxL")
+    fn asm_parser_assembler_max_maxl() {
+        asm_parser("tests/assembler/max/MaxL")
     }
 
     #[test]
-    fn test_asm_parser_assembler_pong_pong() {
-        test_asm_parser("tests/assembler/pong/Pong")
+    fn asm_parser_assembler_pong_pong() {
+        asm_parser("tests/assembler/pong/Pong")
     }
 
     #[test]
-    fn test_asm_parser_assembler_pong_pongl() {
-        test_asm_parser("tests/assembler/pong/PongL")
+    fn asm_parser_assembler_pong_pongl() {
+        asm_parser("tests/assembler/pong/PongL")
     }
 
     #[test]
-    fn test_asm_parser_assembler_rect_rect() {
-        test_asm_parser("tests/assembler/rect/Rect")
+    fn asm_parser_assembler_rect_rect() {
+        asm_parser("tests/assembler/rect/Rect")
     }
 
     #[test]
-    fn test_asm_parser_assembler_rect_rectl() {
-        test_asm_parser("tests/assembler/rect/RectL")
+    fn asm_parser_assembler_rect_rectl() {
+        asm_parser("tests/assembler/rect/RectL")
     }
 
     // Testing assembler:
     // ----------------------------------------------------------------------------
-    fn test_assembler(file: &str) {
+    fn assembler(file: &str) {
         let asm_path: String = format!("{}.asm", file);
         let exp_path: String = format!("{}Exp.hack", file);
         let act_path: String = format!("{}Act.hack", file);
@@ -283,45 +283,45 @@ mod tests {
     }
 
     #[test]
-    fn test_assembler_add_add() {
-        test_assembler("tests/assembler/add/Add")
+    fn assembler_add_add() {
+        assembler("tests/assembler/add/Add")
     }
 
     #[test]
-    fn test_assembler_max_max() {
-        test_assembler("tests/assembler/max/Max")
+    fn assembler_max_max() {
+        assembler("tests/assembler/max/Max")
     }
 
     #[test]
-    fn test_assembler_max_maxl() {
-        test_assembler("tests/assembler/max/MaxL")
+    fn assembler_max_maxl() {
+        assembler("tests/assembler/max/MaxL")
     }
 
     #[test]
-    fn test_assembler_pong_pong() {
-        test_assembler("tests/assembler/pong/Pong")
+    fn assembler_pong_pong() {
+        assembler("tests/assembler/pong/Pong")
     }
 
     #[test]
-    fn test_assembler_pong_pongl() {
-        test_assembler("tests/assembler/pong/PongL")
+    fn assembler_pong_pongl() {
+        assembler("tests/assembler/pong/PongL")
     }
 
     #[test]
-    fn test_assembler_rect_rect() {
-        test_assembler("tests/assembler/rect/Rect")
+    fn assembler_rect_rect() {
+        assembler("tests/assembler/rect/Rect")
     }
 
     #[test]
-    fn test_assembler_rect_rectl() {
-        test_assembler("tests/assembler/rect/RectL")
+    fn assembler_rect_rectl() {
+        assembler("tests/assembler/rect/RectL")
     }
 
     // Testing vm_parser:
     // ----------------------------------------------------------------------------
     // We modify the file extensions as other tests
     // will be grabbing all `.vm` files in directory.
-    fn test_vm_parser(file: &str) {
+    fn vm_parser(file: &str) {
         let vm_path: String = format!("{}.vm", file);
         let act_path: String = format!("{}.avm", file);
         let exp_path: String = format!("{}.evm", file);
@@ -348,78 +348,78 @@ mod tests {
     }
 
     #[test]
-    fn test_vm_parser_vm_to_asm_simpleadd_simpleadd() {
-        test_vm_parser("tests/vm_to_asm/SimpleAdd/SimpleAdd")
+    fn vm_parser_vm_to_asm_simpleadd_simpleadd() {
+        vm_parser("tests/vm_to_asm/SimpleAdd/SimpleAdd")
     }
 
     #[test]
-    fn test_vm_parser_vm_to_asm_basicloop_basicloop() {
-        test_vm_parser("tests/vm_to_asm/BasicLoop/BasicLoop")
+    fn vm_parser_vm_to_asm_basicloop_basicloop() {
+        vm_parser("tests/vm_to_asm/BasicLoop/BasicLoop")
     }
 
     #[test]
-    fn test_vm_parser_vm_to_asm_basictest_basictest() {
-        test_vm_parser("tests/vm_to_asm/BasicTest/BasicTest")
+    fn vm_parser_vm_to_asm_basictest_basictest() {
+        vm_parser("tests/vm_to_asm/BasicTest/BasicTest")
     }
 
     #[test]
-    fn test_vm_parser_vm_to_asm_fibonaccielement_main() {
-        test_vm_parser("tests/vm_to_asm/FibonacciElement/Main")
+    fn vm_parser_vm_to_asm_fibonaccielement_main() {
+        vm_parser("tests/vm_to_asm/FibonacciElement/Main")
     }
 
     #[test]
-    fn test_vm_parser_vm_to_asm_fibonaccielement_sys() {
-        test_vm_parser("tests/vm_to_asm/FibonacciElement/Sys")
+    fn vm_parser_vm_to_asm_fibonaccielement_sys() {
+        vm_parser("tests/vm_to_asm/FibonacciElement/Sys")
     }
 
     #[test]
-    fn test_vm_parser_vm_to_asm_fibonacciseries_fibonacciseries() {
-        test_vm_parser("tests/vm_to_asm/FibonacciSeries/FibonacciSeries")
+    fn vm_parser_vm_to_asm_fibonacciseries_fibonacciseries() {
+        vm_parser("tests/vm_to_asm/FibonacciSeries/FibonacciSeries")
     }
 
     #[test]
-    fn test_vm_parser_vm_to_asm_nestedcall_sys() {
-        test_vm_parser("tests/vm_to_asm/NestedCall/Sys")
+    fn vm_parser_vm_to_asm_nestedcall_sys() {
+        vm_parser("tests/vm_to_asm/NestedCall/Sys")
     }
 
     #[test]
-    fn test_vm_parser_vm_to_asm_pointertest_pointertest() {
-        test_vm_parser("tests/vm_to_asm/PointerTest/PointerTest")
+    fn vm_parser_vm_to_asm_pointertest_pointertest() {
+        vm_parser("tests/vm_to_asm/PointerTest/PointerTest")
     }
 
     #[test]
-    fn test_vm_parser_vm_to_asm_simplefunction_simplefunction() {
-        test_vm_parser("tests/vm_to_asm/SimpleFunction/SimpleFunction")
+    fn vm_parser_vm_to_asm_simplefunction_simplefunction() {
+        vm_parser("tests/vm_to_asm/SimpleFunction/SimpleFunction")
     }
 
     #[test]
-    fn test_vm_parser_vm_to_asm_stacktest_stacktest() {
-        test_vm_parser("tests/vm_to_asm/StackTest/StackTest")
+    fn vm_parser_vm_to_asm_stacktest_stacktest() {
+        vm_parser("tests/vm_to_asm/StackTest/StackTest")
     }
 
     #[test]
-    fn test_vm_parser_vm_to_asm_staticstest_class1() {
-        test_vm_parser("tests/vm_to_asm/StaticsTest/Class1")
+    fn vm_parser_vm_to_asm_staticstest_class1() {
+        vm_parser("tests/vm_to_asm/StaticsTest/Class1")
     }
 
     #[test]
-    fn test_vm_parser_vm_to_asm_staticstest_class2() {
-        test_vm_parser("tests/vm_to_asm/StaticsTest/Class2")
+    fn vm_parser_vm_to_asm_staticstest_class2() {
+        vm_parser("tests/vm_to_asm/StaticsTest/Class2")
     }
 
     #[test]
-    fn test_vm_parser_vm_to_asm_staticstest_sys() {
-        test_vm_parser("tests/vm_to_asm/StaticsTest/Sys")
+    fn vm_parser_vm_to_asm_staticstest_sys() {
+        vm_parser("tests/vm_to_asm/StaticsTest/Sys")
     }
 
     #[test]
-    fn test_vm_parser_vm_to_asm_statictest_statictest() {
-        test_vm_parser("tests/vm_to_asm/StaticTest/StaticTest")
+    fn vm_parser_vm_to_asm_statictest_statictest() {
+        vm_parser("tests/vm_to_asm/StaticTest/StaticTest")
     }
 
     // Testing virtual machine:
     // ----------------------------------------------------------------------------
-    fn test_vm(file: &str) {
+    fn vm(file: &str) {
         let vm_path: String = format!("{}.vm", file);
         // let exp_path: String = format!("{}Exp.asm", file);
         let act_path: String = format!("{}.asm", file);
@@ -448,20 +448,32 @@ mod tests {
     // Following tests will eventually target a directory rather than file
     // Furthermore, will try to run the CPUEmulator to automate tests
     #[test]
-    fn test_vm_to_asm_simpleadd() {
+    fn vm_to_asm_simpleadd() {
         // passed
-        test_vm("tests/vm_to_asm/SimpleAdd/SimpleAdd")
+        vm("tests/vm_to_asm/SimpleAdd/SimpleAdd")
     }
 
     #[test]
-    fn test_vm_to_asm_stacktest() {
+    fn vm_to_asm_stacktest() {
         // passed
-        test_vm("tests/vm_to_asm/StackTest/StackTest")
+        vm("tests/vm_to_asm/StackTest/StackTest")
     }
 
     #[test]
-    fn test_vm_to_asm_basictest() {
+    fn vm_to_asm_basictest() {
         // passed
-        test_vm("tests/vm_to_asm/BasicTest/BasicTest")
+        vm("tests/vm_to_asm/BasicTest/BasicTest")
+    }
+
+    #[test]
+    fn vm_to_asm_basicloop() {
+        // passed
+        vm("tests/vm_to_asm/BasicLoop/BasicLoop")
+    }
+
+    #[test]
+    fn vm_to_asm_fibonacciseries() {
+        // does not pass, due to lack of bootstrap code?
+        vm("tests/vm_to_asm/FibonacciSeries/FibonacciSeries")
     }
 }
