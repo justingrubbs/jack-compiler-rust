@@ -319,8 +319,8 @@ mod tests {
 
     // Testing vm_parser:
     // ----------------------------------------------------------------------------
-    // We modify the file extensions as other tests
-    // will be grabbing all `.vm` files in directory.
+    // We modify the file extensions since other tests will
+    //  be grabbing all `.vm` files in directory.
     fn vm_parser(file: &str) {
         let vm_path: String = format!("{}.vm", file);
         let act_path: String = format!("{}.avm", file);
@@ -449,31 +449,31 @@ mod tests {
     // Furthermore, will try to run the CPUEmulator to automate tests
     #[test]
     fn vm_to_asm_simpleadd() {
-        // passed
+        // passes with the CPUEmulator
         vm("tests/vm_to_asm/SimpleAdd/SimpleAdd")
     }
 
     #[test]
     fn vm_to_asm_stacktest() {
-        // passed
+        // passes with the CPUEmulator
         vm("tests/vm_to_asm/StackTest/StackTest")
     }
 
     #[test]
     fn vm_to_asm_basictest() {
-        // passed
+        // passes with the CPUEmulator
         vm("tests/vm_to_asm/BasicTest/BasicTest")
     }
 
     #[test]
     fn vm_to_asm_basicloop() {
-        // passed
+        // passes with the CPUEmulator
         vm("tests/vm_to_asm/BasicLoop/BasicLoop")
     }
 
     #[test]
     fn vm_to_asm_fibonacciseries() {
-        // does not pass, due to lack of bootstrap code?
+        // passes with the CPUEmulator (since commit cded688)
         vm("tests/vm_to_asm/FibonacciSeries/FibonacciSeries")
     }
 }

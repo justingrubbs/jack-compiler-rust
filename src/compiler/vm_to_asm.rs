@@ -64,8 +64,8 @@ impl VmToAsm {
         self.push_a(AInstruction::Constant(256))
             .push_c(Some(Dest::D), Comp::A, None)
             .push_a(AInstruction::Symbol("SP".to_string()))
-            .push_c(Some(Dest::M), Comp::D, None);
-        // .compile_function(Function::Call("Sys.init".to_string(), 0));
+            .push_c(Some(Dest::M), Comp::D, None)
+            .compile_function(Function::Call("Sys.init".to_string(), 0));
     }
 
     fn compile_command(&mut self, command: Command) -> &mut Self {
