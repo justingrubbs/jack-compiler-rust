@@ -449,31 +449,67 @@ mod tests {
     // Furthermore, will try to run the CPUEmulator to automate tests
     #[test]
     fn vm_to_asm_simpleadd() {
-        // passes with the CPUEmulator
+        // passes without bootstrap code
         vm("tests/vm_to_asm/SimpleAdd/SimpleAdd")
     }
 
     #[test]
     fn vm_to_asm_stacktest() {
-        // passes with the CPUEmulator
+        // passes without bootstrap code
         vm("tests/vm_to_asm/StackTest/StackTest")
     }
 
     #[test]
     fn vm_to_asm_basictest() {
-        // passes with the CPUEmulator
+        // passes without bootstrap code
         vm("tests/vm_to_asm/BasicTest/BasicTest")
     }
 
     #[test]
+    fn vm_to_asm_pointertest() {
+        // passes without bootstrap code
+        vm("tests/vm_to_asm/PointerTest/PointerTest")
+    }
+
+    #[test]
+    fn vm_to_asm_statictest() {
+        // passes without bootstrap code
+        vm("tests/vm_to_asm/StaticTest/StaticTest")
+    }
+
+    #[test]
+    fn vm_to_asm_nestedcall() {
+        // does not crate .asm file
+        vm("tests/vm_to_asm/NestedCall/Sys")
+    }
+
+    #[test]
     fn vm_to_asm_basicloop() {
-        // passes with the CPUEmulator
+        // passes without bootstrap code
         vm("tests/vm_to_asm/BasicLoop/BasicLoop")
     }
 
     #[test]
     fn vm_to_asm_fibonacciseries() {
-        // passes with the CPUEmulator (since commit cded688)
+        // passes with or without bootstrap code
         vm("tests/vm_to_asm/FibonacciSeries/FibonacciSeries")
+    }
+
+    #[test]
+    fn vm_to_asm_simplefunction() {
+        // does not create .asm file
+        vm("tests/vm_to_asm/SimpleFunction/SimpleFunction")
+    }
+
+    // #[test]
+    fn vm_to_asm_staticstest() {
+        // will not work until vm_to_asm is updated to handle multiple files
+        vm("tests/vm_to_asm/StaticsTest/")
+    }
+
+    // #[test]
+    fn vm_to_asm_fibonaccielement() {
+        // will not work until vm_to_asm is updated to handle multiple files
+        vm("tests/vm_to_asm/FibonacciElement/")
     }
 }
