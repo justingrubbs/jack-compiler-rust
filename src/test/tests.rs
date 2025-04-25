@@ -470,7 +470,7 @@ mod tests {
 
     #[test]
     fn vm_to_asm_nestedcall() {
-        // does not pass
+        // passes with bootstrap code
         vm("tests/vm_to_asm/NestedCall/")
     }
 

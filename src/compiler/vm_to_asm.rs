@@ -53,7 +53,7 @@ impl VmToAsm {
     }
 
     fn compile_commands(&mut self, commands: Vec<Command>) -> &mut Self {
-        // self.compile_bootstrap();
+        self.compile_bootstrap();
         commands.into_iter().for_each(|command| {
             self.compile_command(command);
         });
@@ -271,10 +271,8 @@ impl VmToAsm {
     fn compile_function(&mut self, func: Function) -> &mut Self {
         match func {
             Function::Function(s, i) => {
-                self.func_name = s;
-                let func_name = format!("{}.{}", &self.file_name, &self.func_name);
                 self.label_count = 1;
-                self.push_label(func_name).compile_function_locals(i)
+                self.push_label(s).compile_function_locals(i)
             }
             Function::Return => {
                 self.push_a(AInstruction::Symbol("LCL".to_string()))
@@ -313,10 +311,9 @@ impl VmToAsm {
                     .push_c(None, Comp::Zero, Some(Jump::JMP))
             }
             Function::Call(s, args) => {
-                let label_count = &self.label_count;
-                let return_address = format!("{}.{}$ret.{}", &self.file_name, s, label_count);
-                let func_name = format!("{}.{}", &self.file_name, &self.func_name);
+                let label_count = self.label_count;
                 self.label_count += 1;
+                let return_address = format!("{}.{}$ret.{}", &self.file_name, s, label_count);
                 self.push_a(AInstruction::Symbol(return_address.clone()))
                     .push_c(Some(Dest::D), Comp::A, None)
                     .push_pattern()
@@ -337,7 +334,8 @@ impl VmToAsm {
                     .push_a(AInstruction::Symbol("LCL".to_string()))
                     .push_c(Some(Dest::M), Comp::D, None)
                     //
-                    .push_a(AInstruction::Symbol(func_name))
+                    .push_a(AInstruction::Symbol(s.clone()))
+                    // .push_a(AInstruction::Symbol(func_name))
                     .push_c(None, Comp::Zero, Some(Jump::JMP))
                     .push_label(return_address)
             }
