@@ -437,7 +437,9 @@ mod tests {
         }
     }
 
-    // Furthermore, will try to run the CPUEmulator to automate tests
+    // The following `vm_to_asm` tests must be ran with the NandToTetris
+    //  provided `CPUEmulator`. Some of the tests are only valid with 
+    // or without bootstrap code. These tests only generate the `.asm` file.
     #[test]
     fn vm_to_asm_simpleadd() {
         // passes without bootstrap code

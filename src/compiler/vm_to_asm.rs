@@ -335,7 +335,6 @@ impl VmToAsm {
                     .push_c(Some(Dest::M), Comp::D, None)
                     //
                     .push_a(AInstruction::Symbol(s.clone()))
-                    // .push_a(AInstruction::Symbol(func_name))
                     .push_c(None, Comp::Zero, Some(Jump::JMP))
                     .push_label(return_address)
             }
