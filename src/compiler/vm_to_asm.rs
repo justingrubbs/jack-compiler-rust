@@ -53,7 +53,7 @@ impl VmToAsm {
     }
 
     fn compile_commands(&mut self, commands: Vec<Command>) -> &mut Self {
-        self.compile_bootstrap();
+        // self.compile_bootstrap();
         commands.into_iter().for_each(|command| {
             self.compile_command(command);
         });
@@ -276,7 +276,42 @@ impl VmToAsm {
                 self.label_count = 1;
                 self.push_label(func_name).compile_function_locals(i)
             }
-            Function::Return => todo!(),
+            Function::Return => {
+                self.push_a(AInstruction::Symbol("LCL".to_string()))
+                    .push_c(Some(Dest::D), Comp::M, None)
+                    .push_a(AInstruction::Symbol("R13".to_string()))
+                    .push_c(Some(Dest::M), Comp::D, None)
+                    //
+                    .push_a(AInstruction::Constant(5))
+                    .push_c(Some(Dest::A), Comp::DMinusA, None)
+                    .push_c(Some(Dest::D), Comp::M, None)
+                    .push_a(AInstruction::Symbol("R14".to_string()))
+                    .push_c(Some(Dest::M), Comp::D, None)
+                    //
+                    .push_a(AInstruction::Symbol("SP".to_string()))
+                    .push_c(Some(Dest::AM), Comp::MMinusOne, None)
+                    .push_c(Some(Dest::D), Comp::M, None)
+                    .push_a(AInstruction::Symbol("ARG".to_string()))
+                    .push_c(Some(Dest::A), Comp::M, None)
+                    .push_c(Some(Dest::M), Comp::D, None)
+                    //
+                    .push_a(AInstruction::Symbol("ARG".to_string()))
+                    .push_c(Some(Dest::D), Comp::MPlusOne, None)
+                    .push_a(AInstruction::Symbol("SP".to_string()))
+                    .push_c(Some(Dest::M), Comp::D, None)
+                    //
+                    .compile_seg_reset(Segment::That)
+                    //
+                    .compile_seg_reset(Segment::This)
+                    //
+                    .compile_seg_reset(Segment::Argument)
+                    //
+                    .compile_seg_reset(Segment::Local)
+                    //
+                    .push_a(AInstruction::Symbol("R14".to_string()))
+                    .push_c(Some(Dest::A), Comp::M, None)
+                    .push_c(None, Comp::Zero, Some(Jump::JMP))
+            }
             Function::Call(s, args) => {
                 let label_count = &self.label_count;
                 let return_address = format!("{}.{}$ret.{}", &self.file_name, s, label_count);

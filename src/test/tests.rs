@@ -470,7 +470,7 @@ mod tests {
 
     #[test]
     fn vm_to_asm_nestedcall() {
-        // does not crate .asm file
+        // does not pass
         vm("tests/vm_to_asm/NestedCall/")
     }
 
