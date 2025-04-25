@@ -470,7 +470,7 @@ mod tests {
 
     #[test]
     fn vm_to_asm_nestedcall() {
-        // passes with bootstrap code
+        // passes with or without bootstrap code
         vm("tests/vm_to_asm/NestedCall/")
     }
 
@@ -488,19 +488,19 @@ mod tests {
 
     #[test]
     fn vm_to_asm_simplefunction() {
-        // does not create .asm file
+        // passes without bootstrap code
         vm("tests/vm_to_asm/SimpleFunction/")
     }
 
     #[test]
     fn vm_to_asm_staticstest() {
-        // will not work until vm_to_asm is updated to handle multiple files
+        // passes with bootstrap code
         vm("tests/vm_to_asm/StaticsTest/")
     }
 
     #[test]
     fn vm_to_asm_fibonaccielement() {
-        // will not work until vm_to_asm is updated to handle multiple files
+        // passes with bootstrap code
         vm("tests/vm_to_asm/FibonacciElement/")
     }
 }
