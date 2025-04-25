@@ -276,8 +276,8 @@ mod tests {
                 )
             }
             Err(e) => {
-                eprintln!("Error compiling to VM {}: {:?}", asm_path, e);
-                panic!("Failed to compile Jack file to VM: {}", asm_path);
+                eprintln!("Error compiling to hack {}: {:?}", asm_path, e);
+                panic!("Failed to compile ASM file to hack: {}", asm_path);
             }
         }
     }
@@ -419,95 +419,86 @@ mod tests {
 
     // Testing virtual machine:
     // ----------------------------------------------------------------------------
-    fn vm(file: &str) {
-        let vm_path: String = format!("{}.vm", file);
-        // let exp_path: String = format!("{}Exp.asm", file);
-        let act_path: String = format!("{}.asm", file);
-
-        let r_asm = crate::vm_to_asm(&vm_path);
-        match r_asm {
+    fn vm(path: &str) {
+        let dir_name = std::path::Path::new(path)
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or("Main");
+        let act_path = std::path::Path::new(path).join(format!("{}.asm", dir_name));
+        match crate::vm_to_asm(path) {
             Ok(asm) => {
                 let asm_string = crate::pretty_printer::asm::print_asm(asm);
-                std::fs::write(act_path.clone(), asm_string);
-                // let actual = std::path::Path::new(&act_path);
-                // let expected = std::path::Path::new(&exp_path);
-                // assert!(
-                //     compare_files(actual, expected),
-                //     "{} and {} do not match",
-                //     act_path,
-                //     exp_path
-                // )
+                std::fs::write(&act_path, asm_string).expect("Failed to write .asm output");
             }
             Err(e) => {
-                eprintln!("Error transforming VM to ASM {}: {:?}", vm_path, e);
-                panic!("Failed to transform VM to ASM: {}", vm_path);
+                eprintln!("Error transforming VM to ASM {}: {:?}", path, e);
+                panic!("Failed to transform VM to ASM: {}", path);
             }
         }
     }
 
-    // Following tests will eventually target a directory rather than file
     // Furthermore, will try to run the CPUEmulator to automate tests
     #[test]
     fn vm_to_asm_simpleadd() {
         // passes without bootstrap code
-        vm("tests/vm_to_asm/SimpleAdd/SimpleAdd")
+        vm("tests/vm_to_asm/SimpleAdd/")
     }
 
     #[test]
     fn vm_to_asm_stacktest() {
         // passes without bootstrap code
-        vm("tests/vm_to_asm/StackTest/StackTest")
+        vm("tests/vm_to_asm/StackTest/")
     }
 
     #[test]
     fn vm_to_asm_basictest() {
         // passes without bootstrap code
-        vm("tests/vm_to_asm/BasicTest/BasicTest")
+        vm("tests/vm_to_asm/BasicTest/")
     }
 
     #[test]
     fn vm_to_asm_pointertest() {
         // passes without bootstrap code
-        vm("tests/vm_to_asm/PointerTest/PointerTest")
+        vm("tests/vm_to_asm/PointerTest/")
     }
 
     #[test]
     fn vm_to_asm_statictest() {
         // passes without bootstrap code
-        vm("tests/vm_to_asm/StaticTest/StaticTest")
+        vm("tests/vm_to_asm/StaticTest/")
     }
 
     #[test]
     fn vm_to_asm_nestedcall() {
         // does not crate .asm file
-        vm("tests/vm_to_asm/NestedCall/Sys")
+        vm("tests/vm_to_asm/NestedCall/")
     }
 
     #[test]
     fn vm_to_asm_basicloop() {
         // passes without bootstrap code
-        vm("tests/vm_to_asm/BasicLoop/BasicLoop")
+        vm("tests/vm_to_asm/BasicLoop/")
     }
 
     #[test]
     fn vm_to_asm_fibonacciseries() {
         // passes with or without bootstrap code
-        vm("tests/vm_to_asm/FibonacciSeries/FibonacciSeries")
+        vm("tests/vm_to_asm/FibonacciSeries/")
     }
 
     #[test]
     fn vm_to_asm_simplefunction() {
         // does not create .asm file
-        vm("tests/vm_to_asm/SimpleFunction/SimpleFunction")
+        vm("tests/vm_to_asm/SimpleFunction/")
     }
 
-    // #[test]
+    #[test]
     fn vm_to_asm_staticstest() {
         // will not work until vm_to_asm is updated to handle multiple files
         vm("tests/vm_to_asm/StaticsTest/")
     }
 
-    // #[test]
+    #[test]
     fn vm_to_asm_fibonaccielement() {
         // will not work until vm_to_asm is updated to handle multiple files
         vm("tests/vm_to_asm/FibonacciElement/")

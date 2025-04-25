@@ -120,7 +120,7 @@ pub fn parse_vm_file(file_path: &str) -> Result<Vec<crate::ast::vm::Command>, Er
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)))
 }
 
-// Compile a VM file or directory containing VM files to a single ASM file
+// Compile a VM file or directory containing multiple VM files to a single ASM file
 pub fn vm_to_asm(path: &str) -> Result<Vec<crate::ast::asm::Assembly>, Error> {
     let metadata = fs::metadata(path)?;
     if metadata.is_file() {
@@ -133,23 +133,22 @@ pub fn vm_to_asm(path: &str) -> Result<Vec<crate::ast::asm::Assembly>, Error> {
             crate::compiler::vm_to_asm::VmToAsm::compile(file_name.to_string(), commands)
         })
     } else {
-        let mut vm_commands: Vec<crate::ast::vm::Command> = Vec::new();
+        let mut vm_files: Vec<(String, Vec<crate::ast::vm::Command>)> = Vec::new();
         for entry in fs::read_dir(path)? {
             let entry = entry?;
             let file_path = entry.path();
             if file_path.extension().and_then(|s| s.to_str()) == Some("vm") {
+                let file_name = file_path.file_stem().unwrap().to_str().unwrap().to_string();
                 let vm = parse_vm_file(file_path.to_str().unwrap())?;
-                vm_commands.extend(vm);
+                vm_files.push((file_name, vm));
             }
         }
-
-        // gonna go play catan though so can't finish right now, godspeed
-        // I'm lying below I think we can just compile each VM file individually then aggregate resulting ASM commands
-
-        // File name must be preserved for each individual VM vec, not sure how yet, vec of tuples? (file_name, Vec<VMCommands>)
-        Ok(crate::compiler::vm_to_asm::VmToAsm::compile(
-            "Main".to_string(),
-            vm_commands,
-        ))
+        let asm: Vec<_> = vm_files
+            .into_iter()
+            .flat_map(|(file_name, commands)| {
+                crate::compiler::vm_to_asm::VmToAsm::compile(file_name, commands)
+            })
+            .collect();
+        Ok(asm)
     }
 }
