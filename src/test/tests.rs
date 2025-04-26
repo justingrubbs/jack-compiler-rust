@@ -506,3 +506,4 @@ mod tests {
         vm("tests/vm_to_asm/FibonacciElement/")
     }
 }
+

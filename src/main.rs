@@ -43,27 +43,20 @@ fn main() -> Result<(), Error> {
         let hack = jack_to_hack(path)?;
         let file_name = path.trim_end_matches(".jack");
         let hack_string = hack.join("\n");
-        let output_path = format!("{}T.vm", file_name);
+        let output_path = format!("{}.hack", file_name);
         fs::write(output_path, hack_string)?;
-    }
-    // else if metadata.is_dir() {
-    //     // If it's a directory, parse all .jack files
-    //     for entry in fs::read_dir(path)? {
-    //         let entry = entry?;
-    //         let file_path = entry.path();
-    //         if file_path.extension().and_then(|s| s.to_str()) == Some("jack") {
-    //             let tokens = parse_jack_file(file_path.to_str().unwrap())?;
-    //             let token_string = tokens
-    //                 .iter()
-    //                 .map(|token| format!("{:?}", token)) // Adjust formatting as needed
-    //                 .collect::<Vec<String>>()
-    //                 .join("\n");
-    //             let output_path = format!("{}T.xml", path.trim_end_matches(".jack"));
-    //             fs::write(output_path, token_string)?;
-    //         }
-    //     }
-    // }
-    else {
+    } else if metadata.is_dir() {
+        for entry in fs::read_dir(path)? {
+            let entry = entry?;
+            let file_path = entry.path();
+            if file_path.extension().and_then(|s| s.to_str()) == Some("jack") {
+                let hack = jack_to_hack(file_path.to_str().unwrap())?;
+                let hack_string = hack.join("\n");
+                let file_name = file_path.with_extension("hack");
+                fs::write(file_name, hack_string)?;
+            }
+        }
+    } else {
         eprintln!("Provided path is neither a file nor a directory.");
     }
     Ok(())
@@ -85,20 +78,6 @@ pub fn parse_jack_file(file_path: &str) -> Result<crate::ast::jack::Class, Error
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:#?}", e)))
 }
 
-// Remove all of the below and move into /test ?
-// None of it is necessary, only the eventual jack_to_hack func
-
-// Compile a single Jack file into VM
-pub fn jack_to_vm(file_path: &str) -> Result<Vec<crate::ast::vm::Command>, Error> {
-    let file_name = Path::new(file_path)
-        .file_stem()
-        .and_then(|s| s.to_str())
-        .unwrap_or(file_path)
-        .to_string();
-    parse_jack_file(file_path)
-        .map(|class| crate::compiler::jack_to_vm::JackToVm::compile(file_name.to_string(), class))
-}
-
 pub fn jack_to_hack(file_path: &str) -> Result<Vec<String>, Error> {
     let file_name = Path::new(file_path)
         .file_stem()
@@ -109,6 +88,17 @@ pub fn jack_to_hack(file_path: &str) -> Result<Vec<String>, Error> {
         .map(|class| crate::compiler::jack_to_vm::JackToVm::compile(file_name.clone(), class))
         .map(|vm| crate::compiler::vm_to_asm::VmToAsm::compile(file_name, vm))
         .map(|asm| crate::compiler::assembler::Assembler::assemble(asm))
+}
+
+// Compile a single Jack file into VM
+pub fn jack_to_vm(file_path: &str) -> Result<Vec<crate::ast::vm::Command>, Error> {
+    let file_name = Path::new(file_path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or(file_path)
+        .to_string();
+    parse_jack_file(file_path)
+        .map(|class| crate::compiler::jack_to_vm::JackToVm::compile(file_name.to_string(), class))
 }
 
 pub fn parse_asm_file(file_path: &str) -> Result<Vec<crate::ast::asm::Assembly>, Error> {
@@ -123,7 +113,6 @@ pub fn assembler(file_path: &str) -> Result<Vec<String>, Error> {
     parse_asm_file(file_path).map(|v_asm| crate::compiler::assembler::Assembler::assemble(v_asm))
 }
 
-// Will need to be re-written to take a directory or file
 pub fn parse_vm_file(file_path: &str) -> Result<Vec<crate::ast::vm::Command>, Error> {
     let contents = fs::read_to_string(file_path)?;
     crate::test::vm_parser::parse_vm()
