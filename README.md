@@ -16,7 +16,7 @@ A compiler for the Jack programming language, written in Rust. This project is b
 ### Prerequisites
 
 - Rust (latest stable version recommended)
-d
+
 ### Running
 ```bash
 cargo run [path to directory or file]
