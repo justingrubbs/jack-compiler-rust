@@ -10,7 +10,7 @@ pub fn print_asm(assembly: Vec<Assembly>) -> String {
 }
 
 fn print_instruction(instruction: Assembly) -> String {
-    format!("{}", instruction.as_str())
+    instruction.as_str().to_string()
 }
 
 impl Assembly {

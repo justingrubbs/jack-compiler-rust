@@ -6,14 +6,14 @@ pub fn print_tokens(tokens: Vec<Token>) -> String {
         "<tokens>\n{}\n</tokens>\n",
         tokens
             .iter()
-            .map(|token| format!("{}", print_token(token.clone())))
+            .map(|token| print_token(token.clone()))
             .collect::<Vec<String>>()
             .join("\n")
     )
 }
 
 fn print_token(token: Token) -> String {
-    format!("{}", token.as_str())
+    token.as_str().to_string()
 }
 
 impl Keyword {

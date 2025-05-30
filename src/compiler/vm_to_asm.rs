@@ -270,7 +270,7 @@ impl VmToAsm {
 
     fn compile_function(&mut self, func: Function) -> &mut Self {
         match func {
-            Function::Function(s, i) => {
+            Function::Body(s, i) => {
                 self.label_count = 1;
                 self.push_label(s).compile_function_locals(i)
             }

@@ -81,7 +81,7 @@ impl Assembler {
                     self.push_hack(format!("0{}", binary))
                 } else {
                     let binary = format!("{:016b}", i);
-                    self.push_hack(format!("{}", binary))
+                    self.push_hack(binary.to_string())
                 }
             }
             AInstruction::Symbol(s) => {

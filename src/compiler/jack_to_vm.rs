@@ -171,7 +171,7 @@ impl JackToVm {
             local_length += var_dec.var_name.len() as u16;
             self.compile_var_dec(var_dec);
         });
-        self.push_func(Function::Function(
+        self.push_func(Function::Body(
             format!("{}.{}", self.file_name, subroutine_name),
             local_length,
         ));
@@ -386,7 +386,7 @@ impl JackToVm {
                 let s_length: u16 = s.len().try_into().unwrap();
                 self.push_stack(Stack::Push(Segment::Constant, s_length))
                     .push_func(Function::Call("String.new".to_string(), 1));
-                s.chars().into_iter().for_each(|c| {
+                s.chars().for_each(|c| {
                     let char_code = c as u16;
                     self.push_stack(Stack::Push(Segment::Constant, char_code))
                         .push_func(Function::Call("String.appendChar".to_string(), 2));

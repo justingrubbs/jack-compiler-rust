@@ -78,7 +78,7 @@ fn parse_function() -> impl Parser<char, Function, Error = Simple<char>> {
             .padded()
             .ignore_then(parse_identifier())
             .then(parse_num())
-            .map(|(s, i)| Function::Function(s, i)),
+            .map(|(s, i)| Function::Body(s, i)),
         just("call")
             .padded()
             .ignore_then(parse_identifier())

@@ -73,7 +73,7 @@ pub enum Branch {
 // Function commands:
 #[derive(Clone)]
 pub enum Function {
-    Function(String, u16),
+    Body(String, u16),
     Call(String, u16),
     Return,
 }

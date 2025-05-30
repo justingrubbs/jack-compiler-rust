@@ -4,14 +4,14 @@ use crate::ast::vm::*;
 pub fn print_vm(commands: Vec<Command>) -> String {
     commands
         .iter()
-        .map(|command| format!("{}", print_command(command.clone())))
+        .map(|command| print_command(command.clone()))
         .collect::<Vec<String>>()
         .join("\n")
         + "\n"
 }
 
 fn print_command(command: Command) -> String {
-    format!("{}", command.as_str())
+    command.as_str().to_string()
 }
 
 impl Command {
@@ -74,7 +74,7 @@ impl ACL {
 impl Function {
     fn as_str(&self) -> String {
         match self {
-            Function::Function(s, i) => format!("function {} {}", s, i),
+            Function::Body(s, i) => format!("function {} {}", s, i),
             Function::Call(s, i) => format!("call {} {}", s, i),
             Function::Return => "return".to_string(),
         }
