@@ -246,16 +246,16 @@ impl JackToVm {
 
     fn compile_statement(&mut self, statement: Statement) -> &mut Self {
         match statement {
-            Statement::ReturnStatement(or) => match or {
+            Statement::Return(or) => match or {
                 Some(r) => self.compile_expression(r).push_func(Function::Return),
                 None => self
                     .push_stack(Stack::Push(Segment::Constant, 0))
                     .push_func(Function::Return),
             },
-            Statement::DoStatement(sc) => self
+            Statement::Do(sc) => self
                 .compile_subroutine_call(sc)
                 .push_stack(Stack::Pop(Segment::Temp, 0)),
-            Statement::LetStatement(ident, array, e) => {
+            Statement::Let(ident, array, e) => {
                 let var = self.lookup(&ident).expect("Variable not in context");
                 let var_segment = var_kind_to_segment(var.var_kind.clone());
                 let index = var.index;
@@ -274,7 +274,7 @@ impl JackToVm {
                         .push_stack(Stack::Pop(Segment::That, 0)),
                 }
             }
-            Statement::WhileStatement(expr, stmts) => {
+            Statement::While(expr, stmts) => {
                 let label = self.while_label();
                 self.push_branch(Branch::Label(format!("WHILE_EXP{}", label)))
                     .compile_expression(expr)
@@ -288,7 +288,7 @@ impl JackToVm {
                 self.push_branch(Branch::Goto(format!("WHILE_EXP{}", label)))
                     .push_branch(Branch::Label(format!("WHILE_END{}", label)))
             }
-            Statement::IfStatement(e, s1, o_s2) => {
+            Statement::If(e, s1, o_s2) => {
                 self.compile_expression(e);
                 let label = self.if_label();
                 self.push_branch(Branch::IfGoto(format!("IF_TRUE{}", label)))
@@ -416,7 +416,7 @@ impl JackToVm {
                     }
                 }
             }
-            Term::UnaryTerm(uop, t) => self.compile_term(*t).compile_unary_op(uop),
+            Term::Unary(uop, t) => self.compile_term(*t).compile_unary_op(uop),
             Term::ParensExpr(e) => self.compile_expression(*e),
             Term::SubroutineCall(sc) => self.compile_subroutine_call(sc),
         }

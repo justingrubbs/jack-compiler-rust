@@ -87,7 +87,7 @@ pub fn jack_to_hack(file_path: &str) -> Result<Vec<String>, Error> {
     parse_jack_file(file_path)
         .map(|class| crate::compiler::jack_to_vm::JackToVm::compile(file_name.clone(), class))
         .map(|vm| crate::compiler::vm_to_asm::VmToAsm::compile(file_name, vm))
-        .map(|asm| crate::compiler::assembler::Assembler::assemble(asm))
+        .map(crate::compiler::assembler::Assembler::assemble)
 }
 
 // Compile a single Jack file into VM
@@ -110,7 +110,7 @@ pub fn parse_asm_file(file_path: &str) -> Result<Vec<crate::ast::asm::Assembly>,
 
 // Compile a single ASM file into hack
 pub fn assembler(file_path: &str) -> Result<Vec<String>, Error> {
-    parse_asm_file(file_path).map(|v_asm| crate::compiler::assembler::Assembler::assemble(v_asm))
+    parse_asm_file(file_path).map(crate::compiler::assembler::Assembler::assemble)
 }
 
 pub fn parse_vm_file(file_path: &str) -> Result<Vec<crate::ast::vm::Command>, Error> {

@@ -131,7 +131,7 @@ fn parse_subroutine_return_type() -> impl Parser<Token, SubroutineReturnType, Er
 {
     choice((
         kw(Keyword::Void).to(SubroutineReturnType::Void),
-        parse_type().map(|t| SubroutineReturnType::Type(t)),
+        parse_type().map(SubroutineReturnType::Type),
     ))
     .labelled("subroutine return type")
 }
@@ -200,7 +200,7 @@ fn parse_let_statement() -> impl Parser<Token, Statement, Error = Simple<Token>>
         .then(parse_expression())
         .then_ignore(sym(Symbol::Semicolon))
         .map(|((var_name, option_expression), expression)| {
-            Statement::LetStatement(var_name, option_expression, expression)
+            Statement::Let(var_name, option_expression, expression)
         })
         .labelled("let statement")
 }
@@ -230,7 +230,7 @@ fn parse_if_statement<P: Parser<Token, Statement, Error = Simple<Token>> + Clone
                 )
                 .or_not(),
         )
-        .map(|((cond, then), else_opt)| Statement::IfStatement(cond, then, else_opt))
+        .map(|((cond, then), else_opt)| Statement::If(cond, then, else_opt))
         .labelled("if statement")
 }
 
@@ -250,7 +250,7 @@ fn parse_while_statement(
                 .ignore_then(statement.repeated())
                 .then_ignore(sym(Symbol::RCurly)),
         )
-        .map(|(e, s)| Statement::WhileStatement(e, s))
+        .map(|(e, s)| Statement::While(e, s))
         .labelled("while statement")
 }
 
@@ -260,7 +260,7 @@ fn parse_do_statement() -> impl Parser<Token, Statement, Error = Simple<Token>> 
     kw(Keyword::Do)
         .ignore_then(parse_subroutine_call())
         .then_ignore(sym(Symbol::Semicolon))
-        .map(Statement::DoStatement)
+        .map(Statement::Do)
         .labelled("do statement")
 }
 
@@ -270,7 +270,7 @@ fn parse_return_statement() -> impl Parser<Token, Statement, Error = Simple<Toke
     kw(Keyword::Return)
         .ignore_then(parse_expression().or_not())
         .then_ignore(sym(Symbol::Semicolon))
-        .map(Statement::ReturnStatement)
+        .map(Statement::Return)
         .labelled("return statement")
 }
 
@@ -306,7 +306,7 @@ pub fn parse_term<'a>(
         let keyword_const = parse_keyword_constant().map(Term::KeywordConstant);
         let unary_term = parse_unary_op()
             .then(Box::new(term))
-            .map(|(u, t)| Term::UnaryTerm(u, Box::new(t)));
+            .map(|(u, t)| Term::Unary(u, Box::new(t)));
         let parens_expr = sym(Symbol::LParens)
             .ignore_then(expr.clone().map(Box::new))
             .then_ignore(sym(Symbol::RParens))
@@ -417,7 +417,7 @@ fn parse_type() -> impl Parser<Token, Type, Error = Simple<Token>> {
         kw(Keyword::Int).to(Type::Int),
         kw(Keyword::Boolean).to(Type::Boolean),
         kw(Keyword::Char).to(Type::Char),
-        ident().map(|s| Type::ClassName(s)),
+        ident().map(Type::ClassName),
     ))
     .labelled("type")
 }

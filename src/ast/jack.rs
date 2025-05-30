@@ -73,11 +73,11 @@ pub struct VarDec {
 // Statements:
 #[derive(Clone)]
 pub enum Statement {
-    LetStatement(String, Option<Expression>, Expression),
-    IfStatement(Expression, Vec<Statement>, Option<Vec<Statement>>),
-    WhileStatement(Expression, Vec<Statement>),
-    DoStatement(SubroutineCall),
-    ReturnStatement(Option<Expression>),
+    Let(String, Option<Expression>, Expression),
+    If(Expression, Vec<Statement>, Option<Vec<Statement>>),
+    While(Expression, Vec<Statement>),
+    Do(SubroutineCall),
+    Return(Option<Expression>),
 }
 
 // Expressions:
@@ -93,7 +93,7 @@ pub enum Term {
     StringConstant(String),
     KeywordConstant(KeywordConstant),
     VarName(String, Option<Box<Expression>>),
-    UnaryTerm(UnaryOp, Box<Term>),
+    Unary(UnaryOp, Box<Term>),
     ParensExpr(Box<Expression>),
     SubroutineCall(SubroutineCall),
 }

@@ -120,7 +120,7 @@ impl PrettyPrint for Parameter {
         format!(
             "{} {}",
             self.r#type.pretty_print(i),
-            self.var_name.to_string()
+            self.var_name
         )
     }
 }
@@ -155,21 +155,21 @@ impl PrettyPrint for VarDec {
 impl PrettyPrint for Statement {
     fn pretty_print(&self, i: usize) -> String {
         match self {
-            Statement::DoStatement(sc) => format!("do {};", sc.pretty_print(i)),
-            Statement::LetStatement(s, oe, e) => {
+            Statement::Do(sc) => format!("do {};", sc.pretty_print(i)),
+            Statement::Let(s, oe, e) => {
                 let expr = oe
                     .clone()
                     .map_or(String::new(), |expr| format!("[{}]", expr.pretty_print(i)));
                 format!("let {}{} = {};", s, expr, e.pretty_print(i))
             }
-            Statement::WhileStatement(e, s) => {
+            Statement::While(e, s) => {
                 let stmts = s
                     .iter()
                     .map(|stmt| format!("{}{}", tab(i + 1), stmt.pretty_print(i + 1)))
                     .join("\n");
                 format!("while ({}) {{\n{}\n{}}}", e.pretty_print(i), stmts, tab(i))
             }
-            Statement::IfStatement(e, s, os) => {
+            Statement::If(e, s, os) => {
                 let stmts = s
                     .iter()
                     .map(|s| format!("{}{}", tab(i + 1), s.pretty_print(i + 1)))
@@ -194,7 +194,7 @@ impl PrettyPrint for Statement {
                     elsey
                 )
             }
-            Statement::ReturnStatement(oe) => {
+            Statement::Return(oe) => {
                 let expr = oe
                     .clone()
                     .map_or(String::new(), |expr| format!(" {}", expr.pretty_print(i)));
@@ -225,7 +225,7 @@ impl PrettyPrint for Term {
             Term::KeywordConstant(k) => k.pretty_print(i),
             Term::ParensExpr(e) => format!("({})", e.pretty_print(i)),
             Term::SubroutineCall(sc) => sc.pretty_print(i),
-            Term::UnaryTerm(uop, t) => format!("{}{}", uop.pretty_print(i), t.pretty_print(i)),
+            Term::Unary(uop, t) => format!("{}{}", uop.pretty_print(i), t.pretty_print(i)),
             Term::VarName(s, oe) => {
                 let expr = oe
                     .clone()

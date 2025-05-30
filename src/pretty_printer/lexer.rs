@@ -76,7 +76,7 @@ impl Token {
         match self {
             Token::Keyword(k) => format!("<keyword> {} </keyword>", k.as_str()),
             Token::Symbol(s) => format!("<symbol> {} </symbol>", s.as_str()),
-            Token::Integer(i) => format!("<integerConstant> {} </integerConstant>", i.to_string()),
+            Token::Integer(i) => format!("<integerConstant> {} </integerConstant>", i),
             Token::String(s) => format!("<stringConstant> {} </stringConstant>", s),
             Token::Identifier(s) => format!("<identifier> {} </identifier>", s),
         }
